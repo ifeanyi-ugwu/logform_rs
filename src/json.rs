@@ -20,9 +20,13 @@ impl LogFormat for JsonFormat {
         info.message = Value::Object(log_object).to_string();
     }
 }
-
+/*
 pub fn json() -> JsonFormat {
     JsonFormat
+}
+*/
+pub fn json() -> Box<dyn LogFormat> {
+    Box::new(JsonFormat)
 }
 
 #[cfg(test)]

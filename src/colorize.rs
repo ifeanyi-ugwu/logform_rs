@@ -17,7 +17,11 @@ impl LogFormat for ColorizeFormat {
         info.level = format!("\x1b[{}m{}\x1b[0m", self.color, info.level);
     }
 }
-
+/*
 pub fn colorize(color: &str) -> ColorizeFormat {
     ColorizeFormat::new(color)
+}
+*/
+pub fn colorize(color: &str) -> Box<dyn LogFormat> {
+    Box::new(ColorizeFormat::new(color))
 }

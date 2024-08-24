@@ -27,9 +27,13 @@ impl LogFormat for SimpleFormat {
         info.message = message;
     }
 }
-
+/*
 pub fn simple() -> SimpleFormat {
     SimpleFormat
+}
+*/
+pub fn simple() -> Box<dyn LogFormat> {
+    Box::new(SimpleFormat)
 }
 
 #[cfg(test)]

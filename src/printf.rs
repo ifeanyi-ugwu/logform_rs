@@ -21,10 +21,18 @@ where
         info.message = (self.formatter)(info);
     }
 }
-
+/*
 pub fn printf<F>(formatter: F) -> PrintfFormat<F>
 where
     F: Fn(&LogInfo) -> String + 'static,
 {
     PrintfFormat::new(formatter)
+}
+*/
+
+pub fn printf<F>(formatter: F) -> Box<dyn LogFormat>
+where
+    F: Fn(&LogInfo) -> String + 'static,
+{
+    Box::new(PrintfFormat::new(formatter))
 }

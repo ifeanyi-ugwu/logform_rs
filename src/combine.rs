@@ -17,7 +17,11 @@ impl LogFormat for CombineFormat {
         }
     }
 }
-
+/*
 pub fn combine(formats: Vec<Box<dyn LogFormat>>) -> CombineFormat {
     CombineFormat::new(formats)
+}
+*/
+pub fn combine(formats: Vec<Box<dyn LogFormat>>) -> Box<dyn LogFormat> {
+    Box::new(CombineFormat::new(formats))
 }

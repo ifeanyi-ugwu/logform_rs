@@ -1,13 +1,13 @@
-use logform::{colorize, combine, json, printf, simple, timestamp, LogFormat, LogInfo};
+use logform::{colorize, combine, json, printf, simple, timestamp, LogInfo};
 
 #[test]
 pub fn initialize_and_test_formats() {
     let mut info = LogInfo::new("info", "This is a test message");
 
     let format = combine(vec![
-        Box::new(timestamp(None)),
-        Box::new(colorize("31")),
-        Box::new(printf(|info| {
+        timestamp(None),
+        colorize("31"),
+        printf(|info| {
             let timestamp = info
                 .meta
                 .get("timestamp")
@@ -17,7 +17,7 @@ pub fn initialize_and_test_formats() {
             //.unwrap_or_else(|| "".to_string());
 
             format!("{} - {}: {}", timestamp, info.level, info.message)
-        })),
+        }),
     ]);
 
     format.transform(&mut info);

@@ -51,7 +51,11 @@ impl LogFormat for TimestampFormat {
         }
     }
 }
-
+/*
 pub fn timestamp(options: Option<TimestampOptions>) -> TimestampFormat {
     TimestampFormat::new(options)
+}
+*/
+pub fn timestamp(options: Option<TimestampOptions>) -> Box<dyn LogFormat> {
+    Box::new(TimestampFormat::new(options))
 }
