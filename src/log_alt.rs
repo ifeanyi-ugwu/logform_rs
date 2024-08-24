@@ -5,6 +5,8 @@ pub trait LogFormat {
     fn transform(&self, info: &mut LogInfo);
 }
 
+pub type BoxedLogFormat = Box<dyn LogFormat + Send + Sync>;
+
 pub struct LogInfo {
     pub level: String,
     pub message: String,

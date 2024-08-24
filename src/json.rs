@@ -1,4 +1,4 @@
-use crate::log_alt::{LogFormat, LogInfo};
+use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 use serde_json::Value;
 
 pub struct JsonFormat;
@@ -25,7 +25,7 @@ pub fn json() -> JsonFormat {
     JsonFormat
 }
 */
-pub fn json() -> Box<dyn LogFormat> {
+pub fn json() -> BoxedLogFormat {
     Box::new(JsonFormat)
 }
 

@@ -1,4 +1,4 @@
-use crate::log_alt::{LogFormat, LogInfo};
+use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 use chrono::{DateTime, Utc};
 use serde_json::json;
 
@@ -56,6 +56,6 @@ pub fn timestamp(options: Option<TimestampOptions>) -> TimestampFormat {
     TimestampFormat::new(options)
 }
 */
-pub fn timestamp(options: Option<TimestampOptions>) -> Box<dyn LogFormat> {
+pub fn timestamp(options: Option<TimestampOptions>) -> BoxedLogFormat {
     Box::new(TimestampFormat::new(options))
 }

@@ -1,12 +1,12 @@
-use crate::log_alt::{LogFormat, LogInfo};
+use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 
-pub struct PrintfFormat<F: Fn(&LogInfo) -> String> {
+pub struct PrintfFormat<F: Fn(&LogInfo) -> String + Send + Sync> {
     formatter: F,
 }
 
 impl<F> PrintfFormat<F>
 where
-    F: Fn(&LogInfo) -> String,
+    F: Fn(&LogInfo) -> String + Send + Sync,
 {
     pub fn new(formatter: F) -> Self {
         Self { formatter }
@@ -15,7 +15,7 @@ where
 
 impl<F> LogFormat for PrintfFormat<F>
 where
-    F: Fn(&LogInfo) -> String,
+    F: Fn(&LogInfo) -> String + Send + Sync,
 {
     fn transform(&self, info: &mut LogInfo) {
         info.message = (self.formatter)(info);
@@ -30,9 +30,9 @@ where
 }
 */
 
-pub fn printf<F>(formatter: F) -> Box<dyn LogFormat>
+pub fn printf<F>(formatter: F) -> BoxedLogFormat
 where
-    F: Fn(&LogInfo) -> String + 'static,
+    F: Fn(&LogInfo) -> String + Send + Sync + 'static,
 {
     Box::new(PrintfFormat::new(formatter))
 }

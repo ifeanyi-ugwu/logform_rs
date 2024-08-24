@@ -9,7 +9,7 @@ mod timestamp;
 pub use colorize::colorize;
 pub use combine::combine;
 pub use json::json;
-pub use log_alt::{LogFormat, LogInfo};
+pub use log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 pub use printf::printf;
 pub use simple::simple;
 pub use timestamp::{timestamp, TimestampOptions};

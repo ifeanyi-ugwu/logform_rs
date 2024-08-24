@@ -1,11 +1,11 @@
-use crate::log_alt::{LogFormat, LogInfo};
+use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 
 pub struct CombineFormat {
-    formats: Vec<Box<dyn LogFormat>>,
+    formats: Vec<BoxedLogFormat>,
 }
 
 impl CombineFormat {
-    pub fn new(formats: Vec<Box<dyn LogFormat>>) -> Self {
+    pub fn new(formats: Vec<BoxedLogFormat>) -> Self {
         Self { formats }
     }
 }
@@ -22,6 +22,6 @@ pub fn combine(formats: Vec<Box<dyn LogFormat>>) -> CombineFormat {
     CombineFormat::new(formats)
 }
 */
-pub fn combine(formats: Vec<Box<dyn LogFormat>>) -> Box<dyn LogFormat> {
+pub fn combine(formats: Vec<BoxedLogFormat>) -> BoxedLogFormat {
     Box::new(CombineFormat::new(formats))
 }

@@ -1,4 +1,4 @@
-use crate::log_alt::{LogFormat, LogInfo};
+use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 
 pub struct ColorizeFormat {
     color: String,
@@ -22,6 +22,6 @@ pub fn colorize(color: &str) -> ColorizeFormat {
     ColorizeFormat::new(color)
 }
 */
-pub fn colorize(color: &str) -> Box<dyn LogFormat> {
+pub fn colorize(color: &str) -> BoxedLogFormat {
     Box::new(ColorizeFormat::new(color))
 }

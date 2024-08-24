@@ -1,4 +1,4 @@
-use crate::log_alt::{LogFormat, LogInfo};
+use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 
 pub struct SimpleFormat;
 
@@ -32,7 +32,7 @@ pub fn simple() -> SimpleFormat {
     SimpleFormat
 }
 */
-pub fn simple() -> Box<dyn LogFormat> {
+pub fn simple() -> BoxedLogFormat {
     Box::new(SimpleFormat)
 }
 
