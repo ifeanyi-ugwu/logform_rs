@@ -32,7 +32,7 @@ pub fn json() -> BoxedLogFormat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::timestamp::{timestamp, TimestampOptions};
+    use crate::timestamp::timestamp_builder;
     use std::collections::HashMap;
 
     #[test]
@@ -44,13 +44,12 @@ mod tests {
             meta: HashMap::new(),
         };
 
-        let timestamp_options = TimestampOptions {
-            format: Some("%Y-%m-%d %H:%M:%S".to_string()),
-            alias: Some("time".to_string()),
-        };
+        let timestamp_format = timestamp_builder()
+            .format("%Y-%m-%d %H:%M:%S")
+            .alias("time")
+            .build();
 
         // Apply TimestampFormat
-        let timestamp_format = timestamp(Some(timestamp_options));
         timestamp_format.transform(&mut log_info);
 
         // Apply JsonFormat

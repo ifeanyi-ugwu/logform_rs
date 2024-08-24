@@ -12,4 +12,4 @@ pub use json::json;
 pub use log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 pub use printf::printf;
 pub use simple::simple;
-pub use timestamp::{timestamp, TimestampOptions};
+pub use timestamp::{timestamp, timestamp_builder, TimestampOptions};
