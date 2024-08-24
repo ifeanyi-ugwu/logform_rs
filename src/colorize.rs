@@ -83,6 +83,52 @@ pub fn colorize(
     Box::new(Colorizer::new(colors, options))
 }
 
+pub struct ColorizerBuilder {
+    colors: HashMap<String, String>,
+    options: ColorizeOptions,
+}
+
+impl ColorizerBuilder {
+    pub fn new() -> Self {
+        Self {
+            colors: HashMap::new(),
+            options: ColorizeOptions {
+                all: false,
+                level: true,
+                message: false,
+            },
+        }
+    }
+
+    pub fn add_color(mut self, level: &str, color: &str) -> Self {
+        self.colors.insert(level.to_string(), color.to_string());
+        self
+    }
+
+    pub fn set_all(mut self, all: bool) -> Self {
+        self.options.all = all;
+        self
+    }
+
+    pub fn set_level(mut self, level: bool) -> Self {
+        self.options.level = level;
+        self
+    }
+
+    pub fn set_message(mut self, message: bool) -> Self {
+        self.options.message = message;
+        self
+    }
+
+    pub fn build(self) -> BoxedLogFormat {
+        Box::new(Colorizer::new(self.colors, Some(self.options)))
+    }
+}
+
+pub fn colorize_builder() -> ColorizerBuilder {
+    ColorizerBuilder::new()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,27 +136,19 @@ mod tests {
 
     #[test]
     fn test_colorizer() {
-        // Define some colors for different log levels
-        let mut colors = HashMap::new();
-        colors.insert("info".to_string(), "green".to_string());
-        colors.insert("warn".to_string(), "yellow".to_string());
-        colors.insert("error".to_string(), "red".to_string());
-
         // Create a colorizer with options to colorize both level and message
-        let colorizer = colorize(
-            colors,
-            Some(ColorizeOptions {
-                all: true,
-                level: false,
-                message: false,
-            }),
-        );
+        let colorizer_format = colorize_builder()
+            .add_color("info", "green")
+            .add_color("warn", "yellow")
+            .add_color("error", "red")
+            .set_all(true)
+            .build();
 
         // Create a log info object
         let mut log_info = LogInfo::new("info", "This is an info message");
 
         // Apply the colorizer to the log info
-        colorizer.transform(&mut log_info);
+        colorizer_format.transform(&mut log_info);
 
         // Print the transformed (colored) log message to the console
         println!("{}: {}", log_info.level, log_info.message);
@@ -130,23 +168,15 @@ mod tests {
         json_format.transform(&mut log_info);
 
         // Define some colors for different log levels
-        let mut colors = HashMap::new();
-        colors.insert("info".to_string(), "green".to_string());
-        colors.insert("warn".to_string(), "yellow".to_string());
-        colors.insert("error".to_string(), "red".to_string());
-
-        // Create a colorizer with options to colorize both level and message
-        let colorizer = colorize(
-            colors,
-            Some(ColorizeOptions {
-                all: false,
-                level: true,
-                message: false,
-            }),
-        );
+        let colorizer_format = colorize_builder()
+            .add_color("info", "green")
+            .add_color("warn", "yellow")
+            .add_color("error", "red")
+            .set_level(true)
+            .build();
 
         // Apply ColorizeFormat
-        colorizer.transform(&mut log_info);
+        colorizer_format.transform(&mut log_info);
 
         println!("{}", log_info.message);
     }
@@ -167,23 +197,15 @@ mod tests {
         //simple_format.transform(&mut log_info);
 
         // Define some colors for different log levels
-        let mut colors = HashMap::new();
-        colors.insert("info".to_string(), "green".to_string());
-        colors.insert("warn".to_string(), "yellow".to_string());
-        colors.insert("error".to_string(), "red".to_string());
-
-        // Create a colorizer with options to colorize both level and message
-        let colorizer = colorize(
-            colors,
-            Some(ColorizeOptions {
-                all: false,
-                level: false,
-                message: true,
-            }),
-        );
+        let colorizer_format = colorize_builder()
+            .add_color("info", "green")
+            .add_color("warn", "yellow")
+            .add_color("error", "red")
+            .set_message(true)
+            .build();
 
         // Apply ColorizeFormat
-        colorizer.transform(&mut log_info);
+        colorizer_format.transform(&mut log_info);
         simple_format.transform(&mut log_info);
 
         println!("{}", log_info.message);

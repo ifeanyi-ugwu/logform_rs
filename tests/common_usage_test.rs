@@ -1,4 +1,4 @@
-use logform::{colorize, combine, json, printf, simple, timestamp, LogInfo};
+use logform::{colorize_builder, combine, json, printf, simple, timestamp, LogInfo};
 
 #[test]
 pub fn initialize_and_test_formats() {
@@ -6,7 +6,7 @@ pub fn initialize_and_test_formats() {
 
     let format = combine(vec![
         timestamp(None),
-        colorize("31"),
+        colorize_builder().add_color("info", "red").build(),
         printf(|info| {
             let timestamp = info
                 .meta

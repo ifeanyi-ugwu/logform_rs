@@ -6,7 +6,7 @@ mod printf;
 mod simple;
 mod timestamp;
 
-pub use colorize::colorize;
+pub use colorize::{colorize, colorize_builder};
 pub use combine::combine;
 pub use json::json;
 pub use log_alt::{BoxedLogFormat, LogFormat, LogInfo};
