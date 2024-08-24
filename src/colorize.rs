@@ -28,8 +28,14 @@ fn get_color_code_map() -> HashMap<String, String> {
 }
 
 impl Colorizer {
-    pub fn new(colors: HashMap<String, String>, options: ColorizeOptions) -> Self {
+    pub fn new(colors: HashMap<String, String>, options: Option<ColorizeOptions>) -> Self {
         let color_map = get_color_code_map();
+        let options = options.unwrap_or_else(|| ColorizeOptions {
+            all: false,
+            level: true,
+            message: false,
+        });
+
         Self {
             colors,
             options,
@@ -70,7 +76,10 @@ pub fn colorize(color: &str) -> ColorizeFormat {
     ColorizeFormat::new(color)
 }
 */
-pub fn colorize(colors: HashMap<String, String>, options: ColorizeOptions) -> BoxedLogFormat {
+pub fn colorize(
+    colors: HashMap<String, String>,
+    options: Option<ColorizeOptions>,
+) -> BoxedLogFormat {
     Box::new(Colorizer::new(colors, options))
 }
 
@@ -90,11 +99,11 @@ mod tests {
         // Create a colorizer with options to colorize both level and message
         let colorizer = colorize(
             colors,
-            ColorizeOptions {
+            Some(ColorizeOptions {
                 all: true,
                 level: false,
                 message: false,
-            },
+            }),
         );
 
         // Create a log info object
@@ -129,11 +138,11 @@ mod tests {
         // Create a colorizer with options to colorize both level and message
         let colorizer = colorize(
             colors,
-            ColorizeOptions {
+            Some(ColorizeOptions {
                 all: false,
                 level: true,
                 message: false,
-            },
+            }),
         );
 
         // Apply ColorizeFormat
@@ -166,11 +175,11 @@ mod tests {
         // Create a colorizer with options to colorize both level and message
         let colorizer = colorize(
             colors,
-            ColorizeOptions {
+            Some(ColorizeOptions {
                 all: false,
                 level: false,
                 message: true,
-            },
+            }),
         );
 
         // Apply ColorizeFormat
