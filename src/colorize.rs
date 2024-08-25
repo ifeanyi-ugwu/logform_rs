@@ -1,6 +1,136 @@
-use crate::{BoxedLogFormat, LogFormat, LogInfo};
+use crate::{create_format, LogFormat, LogInfo};
+use colored::*;
 use std::collections::HashMap;
 
+#[derive(Clone)]
+pub struct Colorizer {
+    all_colors: HashMap<String, Vec<String>>,
+}
+
+impl Colorizer {
+    pub fn new(colors: Option<HashMap<String, Vec<String>>>) -> Self {
+        let mut all_colors = HashMap::new();
+
+        if let Some(clrs) = colors {
+            for (level, color_list) in clrs {
+                all_colors.insert(level, color_list);
+            }
+        }
+
+        Colorizer { all_colors }
+    }
+
+    pub fn colorize(&self, level: &str, message: &str) -> String {
+        if let Some(color_list) = self.all_colors.get(level) {
+            let mut colored_message = message.to_string();
+            for color in color_list {
+                colored_message = match color.as_str() {
+                    "red" => colored_message.red().to_string(),
+                    "green" => colored_message.green().to_string(),
+                    "yellow" => colored_message.yellow().to_string(),
+                    "blue" => colored_message.blue().to_string(),
+                    "magenta" => colored_message.magenta().to_string(),
+                    "cyan" => colored_message.cyan().to_string(),
+                    "white" => colored_message.white().to_string(),
+                    _ => colored_message,
+                };
+            }
+            colored_message
+        } else {
+            message.to_string()
+        }
+    }
+
+    pub fn transform(
+        &self,
+        mut info: LogInfo,
+        opts: Option<HashMap<String, String>>,
+    ) -> Option<LogInfo> {
+        println!("Original info: {:?}", info); // Debug print
+
+        if let Some(ref opts) = opts {
+            if opts.get("all").is_some() {
+                info.message = self.colorize(&info.level, &info.message);
+            }
+
+            if opts.get("level").is_some()
+                || opts.get("all").is_some()
+                || opts.get("message").is_none()
+            {
+                info.level = self.colorize(&info.level, &info.level);
+            }
+
+            if opts.get("all").is_some() || opts.get("message").is_some() {
+                info.message = self.colorize(&info.level, &info.message);
+            }
+        }
+
+        Some(info)
+    }
+}
+
+pub fn colorize(opts: Option<HashMap<String, Vec<String>>>) -> impl LogFormat + Clone {
+    let colorizer = Colorizer::new(opts);
+    create_format(
+        move |info: LogInfo, options: Option<&HashMap<String, String>>| {
+            colorizer.transform(info, options.cloned())
+        },
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use colored::control::set_override;
+    use serde_json::json;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_colorize_formatter() {
+        // Force colored output even if not in a TTY environment
+        set_override(true);
+
+        let mut color_map = HashMap::new();
+        color_map.insert("info".to_string(), vec!["blue".to_string()]);
+        color_map.insert(
+            "error".to_string(),
+            vec!["red".to_string(), "bold".to_string()],
+        );
+
+        let formatter = colorize(Some(color_map));
+
+        let mut meta = HashMap::new();
+        meta.insert("key".to_string(), json!("value"));
+
+        let info = LogInfo {
+            level: "info".to_string(),
+            message: "This is an info message".to_string(),
+            meta,
+        };
+
+        let opts = Some(HashMap::from([
+            ("all".to_string(), "true".to_string()), // Ensure 'all' option is used
+        ]));
+
+        let result = formatter.transform(info, opts.as_ref()).unwrap();
+        println!("{}", result.message);
+
+        // Expected output: Blue colored "info" message
+
+        let error_info = LogInfo {
+            level: "error".to_string(),
+            message: "This is an error message".to_string(),
+            meta: HashMap::new(),
+        };
+
+        let result_error = formatter.transform(error_info, opts.as_ref()).unwrap();
+        println!("{}", result_error.message);
+
+        // Expected output: Red and bold colored "error" message
+    }
+}
+
+/*
 pub struct ColorizeOptions {
     pub all: bool,
     pub level: bool,
@@ -216,3 +346,4 @@ mod tests {
         println!("{}", log_info.message);
     }
 }
+*/
