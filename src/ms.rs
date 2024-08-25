@@ -1,6 +1,5 @@
-use crate::{create_format, Format, LogInfo};
+use crate::{create_format, Format, FormatOptions, LogInfo};
 use lazy_static::lazy_static;
-use std::collections::HashMap;
 use std::sync::Mutex;
 use std::time::Instant;
 
@@ -9,19 +8,17 @@ lazy_static! {
 }
 
 pub fn ms() -> Format {
-    create_format(
-        move |mut info: LogInfo, _options: Option<&HashMap<String, String>>| {
-            let curr = Instant::now();
-            let mut prev_time = PREV_TIME.lock().unwrap();
-            let diff = curr.duration_since(*prev_time);
-            *prev_time = curr;
+    create_format(move |mut info: LogInfo, _options: FormatOptions| {
+        let curr = Instant::now();
+        let mut prev_time = PREV_TIME.lock().unwrap();
+        let diff = curr.duration_since(*prev_time);
+        *prev_time = curr;
 
-            // Add the time difference in milliseconds to the `info` meta
-            info.meta
-                .insert("ms".to_string(), format!("+{}ms", diff.as_millis()).into());
-            Some(info)
-        },
-    )
+        // Add the time difference in milliseconds to the `info` meta
+        info.meta
+            .insert("ms".to_string(), format!("+{}ms", diff.as_millis()).into());
+        Some(info)
+    })
 }
 
 #[cfg(test)]

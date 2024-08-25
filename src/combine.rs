@@ -1,12 +1,12 @@
-use crate::{Format, LogFormat, LogInfo};
-use std::collections::HashMap;
+use crate::{Format, FormatOptions, LogFormat, LogInfo};
 use std::sync::Arc;
 
 pub fn combine(formats: Vec<Format>) -> Format {
-    let combined = move |info: LogInfo, opts: Option<&HashMap<String, String>>| {
+    let combined = move |info: LogInfo, opts: FormatOptions| {
         let mut obj = info;
+        let opts = opts;
         for format in &formats {
-            obj = match format.transform(obj.clone(), opts) {
+            obj = match format.transform(obj.clone(), opts.clone()) {
                 Some(new_info) => new_info,
                 None => return None,
             };
@@ -21,6 +21,8 @@ pub fn combine(formats: Vec<Format>) -> Format {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::{create_format, printf, simple};
     use colored::*;
@@ -28,23 +30,19 @@ mod tests {
 
     #[test]
     fn test_combine_formatters() {
-        let aligner = create_format(
-            |mut info: LogInfo, _opts: Option<&HashMap<String, String>>| {
-                info.message = format!("\t{}", info.message);
-                Some(info)
-            },
-        );
+        let aligner = create_format(|mut info: LogInfo, _opts: FormatOptions| {
+            info.message = format!("\t{}", info.message);
+            Some(info)
+        });
 
-        let colorizer = create_format(
-            |mut info: LogInfo, opts: Option<&HashMap<String, String>>| {
-                if let Some(opts) = opts {
-                    if opts.get("all").is_some() {
-                        info.message = info.message.red().to_string(); // Example colorizer
-                    }
+        let colorizer = create_format(|mut info: LogInfo, opts: FormatOptions| {
+            if let Some(opts) = opts {
+                if opts.get("all").is_some() {
+                    info.message = info.message.red().to_string(); // Example colorizer
                 }
-                Some(info)
-            },
-        );
+            }
+            Some(info)
+        });
 
         let formatter = printf(|info: &LogInfo| {
             format!(
@@ -69,7 +67,7 @@ mod tests {
 
         let opts = Some(HashMap::from([("all".to_string(), "true".to_string())]));
 
-        let result = combined_formatter.transform(info, opts.as_ref()).unwrap();
+        let result = combined_formatter.transform(info, opts).unwrap();
         println!("Combined format result: {:?}", result.message);
     }
 }

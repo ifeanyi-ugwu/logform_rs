@@ -1,20 +1,21 @@
 use crate::LogInfo;
 use std::{collections::HashMap, sync::Arc};
 
+pub type FormatOptions = Option<HashMap<String, String>>;
+
 pub trait LogFormat: Clone {
-    fn transform(&self, info: LogInfo, opts: Option<&HashMap<String, String>>) -> Option<LogInfo>;
+    fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo>;
 }
 
 // a cloneable trait object
-type BoxedLogFormatFn =
-    Arc<dyn Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Send + Sync>;
+type BoxedLogFormatFn = Arc<dyn Fn(LogInfo, FormatOptions) -> Option<LogInfo> + Send + Sync>;
 
 pub struct Format {
     pub format_fn: BoxedLogFormatFn,
 }
 
 impl LogFormat for Format {
-    fn transform(&self, info: LogInfo, opts: Option<&HashMap<String, String>>) -> Option<LogInfo> {
+    fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo> {
         (self.format_fn)(info, opts)
     }
 }
@@ -29,7 +30,7 @@ impl Clone for Format {
 
 pub fn create_format<F>(format_fn: F) -> Format
 where
-    F: Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Send + Sync + 'static,
+    F: Fn(LogInfo, FormatOptions) -> Option<LogInfo> + Send + Sync + 'static,
 {
     Format {
         format_fn: Arc::new(format_fn),
@@ -43,18 +44,16 @@ mod tests {
 
     #[test]
     fn test_custom_format() {
-        let volume = create_format(
-            |mut info: LogInfo, opts: Option<&HashMap<String, String>>| {
-                if let Some(opts) = opts {
-                    if opts.get("yell").is_some() {
-                        info.message = info.message.to_uppercase();
-                    } else if opts.get("whisper").is_some() {
-                        info.message = info.message.to_lowercase();
-                    }
+        let volume = create_format(|mut info: LogInfo, opts: FormatOptions| {
+            if let Some(opts) = opts {
+                if opts.get("yell").is_some() {
+                    info.message = info.message.to_uppercase();
+                } else if opts.get("whisper").is_some() {
+                    info.message = info.message.to_lowercase();
                 }
-                Some(info)
-            },
-        );
+            }
+            Some(info)
+        });
 
         let mut scream_opts = HashMap::new();
         scream_opts.insert("yell".to_string(), "true".to_string());
@@ -66,7 +65,7 @@ mod tests {
             meta: HashMap::new(),
         };
 
-        let result = scream.transform(info, Some(&scream_opts)).unwrap();
+        let result = scream.transform(info, Some(scream_opts)).unwrap();
         println!("{}", result.message);
 
         let mut whisper_opts = HashMap::new();
@@ -79,21 +78,20 @@ mod tests {
             meta: HashMap::new(),
         };
 
-        let result2 = whisper.transform(info2, Some(&whisper_opts)).unwrap();
+        let result2 = whisper.transform(info2, Some(whisper_opts)).unwrap();
         println!("{}", result2.message);
     }
 
     #[test]
     fn test_ignore_private() {
-        let ignore_private =
-            create_format(|info: LogInfo, _opts: Option<&HashMap<String, String>>| {
-                if let Some(private) = info.meta.get("private") {
-                    if private == "true" {
-                        return None;
-                    }
+        let ignore_private = create_format(|info: LogInfo, _opts: FormatOptions| {
+            if let Some(private) = info.meta.get("private") {
+                if private == "true" {
+                    return None;
                 }
-                Some(info)
-            });
+            }
+            Some(info)
+        });
 
         let format = ignore_private;
 

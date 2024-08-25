@@ -1,9 +1,8 @@
-use crate::{create_format, Format, LogInfo};
+use crate::{create_format, Format, FormatOptions, LogInfo};
 use serde_json::to_string_pretty;
-use std::collections::HashMap;
 
 pub fn pretty_print() -> Format {
-    create_format(|info: LogInfo, opts: Option<&HashMap<String, String>>| {
+    create_format(|info: LogInfo, opts: FormatOptions| {
         // Clone the meta to work with
         let mut meta = info.meta.clone();
 
@@ -14,6 +13,7 @@ pub fn pretty_print() -> Format {
 
         // Determine if we should colorize the output (default to false)
         let colorize = opts
+            .as_ref()
             .and_then(|o| o.get("colorize"))
             .map_or(false, |v| v == "true");
 

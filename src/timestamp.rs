@@ -1,26 +1,27 @@
-use crate::{create_format, Format, LogInfo};
+use crate::{create_format, Format, FormatOptions, LogInfo};
 use chrono::{DateTime, Utc};
 use serde_json::json;
-use std::collections::HashMap;
 
 pub fn timestamp() -> Format {
-    create_format(
-        |mut info: LogInfo, opts: Option<&HashMap<String, String>>| {
-            let format = opts
-                .and_then(|o| o.get("format").cloned())
-                .unwrap_or_else(|| "%Y-%m-%d %H:%M:%S".to_string());
+    create_format(|mut info: LogInfo, opts: FormatOptions| {
+        let format = opts
+            .as_ref()
+            .and_then(|o| o.get("format"))
+            .map(String::as_str)
+            .unwrap_or("%Y-%m-%d %H:%M:%S");
 
-            let alias = opts
-                .and_then(|o| o.get("alias").cloned())
-                .unwrap_or_else(|| "timestamp".to_string());
+        let alias = opts
+            .as_ref()
+            .and_then(|o| o.get("alias"))
+            .map(String::as_str)
+            .unwrap_or("timestamp");
 
-            let now: DateTime<Utc> = Utc::now();
-            let timestamp = now.format(&format).to_string();
+        let now: DateTime<Utc> = Utc::now();
+        let timestamp = now.format(&format).to_string();
 
-            info.meta.insert(alias, json!(timestamp));
-            Some(info)
-        },
-    )
+        info.meta.insert(alias.to_string(), json!(timestamp));
+        Some(info)
+    })
 }
 /*
 pub struct TimestampBuilder {
@@ -89,7 +90,7 @@ mod tests {
             meta: HashMap::new(),
         };
 
-        let result2 = formatter.transform(info2, Some(&custom_opts)).unwrap();
+        let result2 = formatter.transform(info2, Some(custom_opts)).unwrap();
         println!("{:?}", result2.meta);
     }
 }

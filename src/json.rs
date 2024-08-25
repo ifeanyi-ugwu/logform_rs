@@ -1,9 +1,8 @@
-use crate::{create_format, Format, LogInfo};
+use crate::{create_format, Format, FormatOptions, LogInfo};
 use serde_json::{Map, Value};
-use std::collections::HashMap;
 
 pub fn json() -> Format {
-    create_format(|info: LogInfo, _opts: Option<&HashMap<String, String>>| {
+    create_format(|info: LogInfo, _opts: FormatOptions| {
         // Create a JSON object including the level, message, and other meta data
         let mut log_object = Map::new();
 

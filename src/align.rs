@@ -1,14 +1,11 @@
-use crate::{create_format, Format, LogInfo};
-use std::collections::HashMap;
+use crate::{create_format, Format, FormatOptions, LogInfo};
 
 pub fn align() -> Format {
-    create_format(
-        move |mut info: LogInfo, _options: Option<&HashMap<String, String>>| {
-            // Add a tab character before the message
-            info.message = format!("\t{}", info.message);
-            Some(info)
-        },
-    )
+    create_format(move |mut info: LogInfo, _options: FormatOptions| {
+        // Add a tab character before the message
+        info.message = format!("\t{}", info.message);
+        Some(info)
+    })
 }
 
 #[cfg(test)]

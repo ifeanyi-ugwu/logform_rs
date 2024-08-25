@@ -1,4 +1,4 @@
-use crate::{create_format, Format, LogInfo};
+use crate::{create_format, Format, FormatOptions, LogInfo};
 use colored::*;
 use std::collections::HashMap;
 
@@ -71,11 +71,7 @@ impl Colorizer {
 
 pub fn colorize(opts: Option<HashMap<String, Vec<String>>>) -> Format {
     let colorizer = Colorizer::new(opts);
-    create_format(
-        move |info: LogInfo, options: Option<&HashMap<String, String>>| {
-            colorizer.transform(info, options.cloned())
-        },
-    )
+    create_format(move |info: LogInfo, options: FormatOptions| colorizer.transform(info, options))
 }
 
 #[cfg(test)]
@@ -113,7 +109,7 @@ mod tests {
             ("all".to_string(), "true".to_string()), // Ensure 'all' option is used
         ]));
 
-        let result = formatter.transform(info, opts.as_ref()).unwrap();
+        let result = formatter.transform(info, opts.clone()).unwrap();
         println!("{}", result.message);
 
         // Expected output: Blue colored "info" message
@@ -124,7 +120,7 @@ mod tests {
             meta: HashMap::new(),
         };
 
-        let result_error = formatter.transform(error_info, opts.as_ref()).unwrap();
+        let result_error = formatter.transform(error_info, opts).unwrap();
         println!("{}", result_error.message);
 
         // Expected output: Red and bold colored "error" message

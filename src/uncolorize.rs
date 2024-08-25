@@ -1,24 +1,22 @@
-use crate::{create_format, Format, LogInfo};
+use crate::{create_format, Format, FormatOptions, LogInfo};
 use regex::Regex;
 use std::collections::HashMap;
 
 pub fn uncolorize() -> Format {
-    create_format(
-        move |mut info: LogInfo, options: Option<&HashMap<String, String>>| {
-            let binding = HashMap::new();
-            let opts = options.unwrap_or(&binding);
+    create_format(move |mut info: LogInfo, options: FormatOptions| {
+        let binding = HashMap::new();
+        let opts = options.unwrap_or(binding);
 
-            if opts.get("level").unwrap_or(&"true".to_string()) != "false" {
-                info.level = strip_colors(&info.level);
-            }
+        if opts.get("level").unwrap_or(&"true".to_string()) != "false" {
+            info.level = strip_colors(&info.level);
+        }
 
-            if opts.get("message").unwrap_or(&"true".to_string()) != "false" {
-                info.message = strip_colors(&info.message);
-            }
+        if opts.get("message").unwrap_or(&"true".to_string()) != "false" {
+            info.message = strip_colors(&info.message);
+        }
 
-            Some(info)
-        },
-    )
+        Some(info)
+    })
 }
 
 fn strip_colors(input: &str) -> String {
@@ -60,7 +58,7 @@ mod tests {
 
         let opts = Some(HashMap::from([("all".to_string(), "true".to_string())]));
 
-        let colorized_info = colorizer.transform(info, opts.as_ref()).unwrap();
+        let colorized_info = colorizer.transform(info, opts).unwrap();
 
         // Step 2: Uncolorize
         let uncolorizer = uncolorize();
