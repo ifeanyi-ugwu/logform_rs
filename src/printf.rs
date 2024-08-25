@@ -1,5 +1,76 @@
-use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
+use crate::{
+    create_format,
+    log_alt::{LogFormat, LogInfo},
+};
+use std::collections::HashMap;
+use std::sync::Arc;
 
+#[derive(Clone)]
+pub struct Printf {
+    template: Arc<dyn Fn(&LogInfo) -> String>,
+}
+
+impl Printf {
+    pub fn new(template_fn: Arc<dyn Fn(&LogInfo) -> String>) -> Self {
+        Printf {
+            template: template_fn,
+        }
+    }
+
+    pub fn transform(
+        &self,
+        mut info: LogInfo,
+        _opts: Option<HashMap<String, String>>,
+    ) -> Option<LogInfo> {
+        info.message = (self.template)(&info);
+        Some(info)
+    }
+}
+
+pub fn printf<T>(template_fn: T) -> impl LogFormat + Clone
+where
+    T: Fn(&LogInfo) -> String + 'static,
+{
+    let printf_formatter = Printf::new(Arc::new(template_fn));
+    create_format(
+        move |info: LogInfo, options: Option<&HashMap<String, String>>| {
+            printf_formatter.transform(info, options.map(|o| o.clone()))
+        },
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_printf_formatter() {
+        let formatter = printf(|info: &LogInfo| {
+            format!(
+                "{} - {}: {}",
+                info.level,
+                info.message,
+                serde_json::to_string(&info.meta).unwrap_or_default()
+            )
+        });
+
+        let mut meta = HashMap::new();
+        meta.insert("key".to_string(), json!("value"));
+
+        let info = LogInfo {
+            level: "info".to_string(),
+            message: "This is a message".to_string(),
+            meta,
+        };
+
+        let result = formatter.transform(info, None).unwrap();
+        println!("{}", result.message); // Check the formatted output
+    }
+}
+
+/*
 pub struct PrintfFormat<F: Fn(&LogInfo) -> String + Send + Sync> {
     formatter: F,
 }
@@ -17,7 +88,7 @@ impl<F> LogFormat for PrintfFormat<F>
 where
     F: Fn(&LogInfo) -> String + Send + Sync,
 {
-    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
+    fn transform(&self, info: LogInfo, opts: Option<&HashMap<String, String>>) -> Option<LogInfo> {
         let formatted_message = (self.formatter)(&info);
         Some(LogInfo {
             level: info.level,
@@ -41,3 +112,4 @@ where
 {
     Box::new(PrintfFormat::new(formatter))
 }
+*/
