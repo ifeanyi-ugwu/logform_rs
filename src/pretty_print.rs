@@ -2,7 +2,7 @@ use crate::{create_format, Format, LogInfo};
 use serde_json::to_string_pretty;
 use std::collections::HashMap;
 
-pub fn pretty_print_formatter() -> Format {
+pub fn pretty_print() -> Format {
     create_format(|info: LogInfo, opts: Option<&HashMap<String, String>>| {
         // Clone the meta to work with
         let mut meta = info.meta.clone();
@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_pretty_print_formatter() {
-        let formatter = pretty_print_formatter();
+        let formatter = pretty_print();
 
         let mut meta = HashMap::new();
         meta.insert("user_id".to_string(), json!(12345));

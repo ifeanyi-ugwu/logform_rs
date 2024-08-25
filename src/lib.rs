@@ -18,7 +18,7 @@ pub use format::{create_format, Format, LogFormat};
 pub use json::json;
 pub use log_info::LogInfo;
 pub use ms::ms;
-pub use pretty_print::pretty_print_formatter;
+pub use pretty_print::pretty_print;
 pub use printf::printf;
 pub use simple::simple;
 pub use timestamp::timestamp;
