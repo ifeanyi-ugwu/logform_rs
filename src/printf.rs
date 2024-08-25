@@ -7,11 +7,11 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Printf {
-    template: Arc<dyn Fn(&LogInfo) -> String>,
+    template: Arc<dyn Fn(&LogInfo) -> String + Send + Sync>,
 }
 
 impl Printf {
-    pub fn new(template_fn: Arc<dyn Fn(&LogInfo) -> String>) -> Self {
+    pub fn new(template_fn: Arc<dyn Fn(&LogInfo) -> String + Send + Sync>) -> Self {
         Printf {
             template: template_fn,
         }
@@ -29,7 +29,7 @@ impl Printf {
 
 pub fn printf<T>(template_fn: T) -> impl LogFormat + Clone
 where
-    T: Fn(&LogInfo) -> String + 'static,
+    T: Fn(&LogInfo) -> String + Send + Sync + 'static,
 {
     let printf_formatter = Printf::new(Arc::new(template_fn));
     create_format(
