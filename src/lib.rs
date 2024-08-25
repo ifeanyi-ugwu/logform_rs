@@ -11,7 +11,7 @@ mod simple;
 mod timestamp;
 mod uncolorize;
 
-pub use align::align_format;
+pub use align::align;
 pub use colorize::colorize;
 pub use combine::combine;
 pub use format::{create_format, Format, LogFormat};

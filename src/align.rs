@@ -1,7 +1,7 @@
 use crate::{create_format, Format, LogInfo};
 use std::collections::HashMap;
 
-pub fn align_format() -> Format {
+pub fn align() -> Format {
     create_format(
         move |mut info: LogInfo, _options: Option<&HashMap<String, String>>| {
             // Add a tab character before the message
@@ -21,7 +21,7 @@ mod tests {
     #[test]
     fn test_align_format() {
         // Initialize the formatter
-        let formatter = align_format();
+        let formatter = align();
 
         // Example log info
         let mut meta = HashMap::new();
