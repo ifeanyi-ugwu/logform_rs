@@ -16,6 +16,7 @@ pub fn combine(formats: Vec<Format>) -> Format {
 
     Format {
         format_fn: Arc::new(combined),
+        options: None,
     }
 }
 
