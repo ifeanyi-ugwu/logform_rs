@@ -12,6 +12,7 @@ type BoxedLogFormatFn = Arc<dyn Fn(LogInfo, FormatOptions) -> Option<LogInfo> + 
 
 pub struct Format {
     pub format_fn: BoxedLogFormatFn,
+    pub options: FormatOptions,
 }
 
 impl LogFormat for Format {
@@ -24,6 +25,7 @@ impl Clone for Format {
     fn clone(&self) -> Self {
         Format {
             format_fn: Arc::clone(&self.format_fn),
+            options: self.options.clone(),
         }
     }
 }
@@ -34,6 +36,7 @@ where
 {
     Format {
         format_fn: Arc::new(format_fn),
+        options: None,
     }
 }
 
