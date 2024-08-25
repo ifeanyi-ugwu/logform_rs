@@ -1,5 +1,9 @@
-use crate::{LogFormat, LogInfo};
+use crate::LogInfo;
 use std::{collections::HashMap, sync::Arc};
+
+pub trait LogFormat: Clone {
+    fn transform(&self, info: LogInfo, opts: Option<&HashMap<String, String>>) -> Option<LogInfo>;
+}
 
 // a cloneable trait object
 type BoxedLogFormatFn =

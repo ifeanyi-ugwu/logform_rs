@@ -1,4 +1,4 @@
-use crate::{create_format, log_alt::LogInfo, Format};
+use crate::{create_format, Format, LogInfo};
 use std::collections::HashMap;
 
 pub fn simple() -> Format {
