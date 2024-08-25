@@ -2,11 +2,12 @@ use crate::{Format, FormatOptions, LogFormat, LogInfo};
 use std::sync::Arc;
 
 pub fn combine(formats: Vec<Format>) -> Format {
-    let combined = move |info: LogInfo, opts: FormatOptions| {
+    let combined = move |info: LogInfo, _opts: FormatOptions| {
         let mut obj = info;
-        let opts = opts;
+
         for format in &formats {
-            obj = match format.transform(obj.clone(), opts.clone()) {
+            let format_opts = format.options.clone();
+            obj = match format.transform(obj.clone(), format_opts) {
                 Some(new_info) => new_info,
                 None => return None,
             };
