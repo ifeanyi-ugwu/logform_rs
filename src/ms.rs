@@ -8,7 +8,7 @@ lazy_static! {
     static ref PREV_TIME: Mutex<Instant> = Mutex::new(Instant::now());
 }
 
-pub fn time_diff_format() -> Format {
+pub fn ms() -> Format {
     create_format(
         move |mut info: LogInfo, _options: Option<&HashMap<String, String>>| {
             let curr = Instant::now();
@@ -35,7 +35,7 @@ mod tests {
 
     #[test]
     fn test_time_diff_format() {
-        let formatter = time_diff_format();
+        let formatter = ms();
 
         let mut meta = HashMap::new();
         meta.insert("key".to_string(), json!("value"));
