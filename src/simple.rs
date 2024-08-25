@@ -18,6 +18,7 @@ pub fn simple() -> Format {
         rest.remove("level");
         rest.remove("message");
         rest.remove("splat");
+        rest.remove("padding"); // Remove the padding field
 
         // If there are remaining fields, stringify them and append to the message
         if !rest.is_empty() {
