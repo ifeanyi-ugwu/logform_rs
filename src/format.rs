@@ -1,38 +1,35 @@
 use crate::{LogFormat, LogInfo};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
-pub struct Format<F>
-where
-    F: Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Clone,
-{
-    format_fn: F,
+// a cloneable trait object
+type BoxedLogFormatFn =
+    Arc<dyn Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Send + Sync>;
+
+pub struct Format {
+    pub format_fn: BoxedLogFormatFn,
 }
 
-impl<F> LogFormat for Format<F>
-where
-    F: Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Clone,
-{
+impl LogFormat for Format {
     fn transform(&self, info: LogInfo, opts: Option<&HashMap<String, String>>) -> Option<LogInfo> {
         (self.format_fn)(info, opts)
     }
 }
 
-impl<F> Clone for Format<F>
-where
-    F: Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Clone,
-{
+impl Clone for Format {
     fn clone(&self) -> Self {
         Format {
-            format_fn: self.format_fn.clone(),
+            format_fn: Arc::clone(&self.format_fn),
         }
     }
 }
 
-pub fn create_format<F>(format_fn: F) -> Format<F>
+pub fn create_format<F>(format_fn: F) -> Format
 where
-    F: Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Clone,
+    F: Fn(LogInfo, Option<&HashMap<String, String>>) -> Option<LogInfo> + Send + Sync + 'static,
 {
-    Format { format_fn }
+    Format {
+        format_fn: Arc::new(format_fn),
+    }
 }
 
 #[cfg(test)]
