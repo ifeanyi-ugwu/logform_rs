@@ -34,7 +34,7 @@ impl TimestampFormat {
 }
 
 impl LogFormat for TimestampFormat {
-    fn transform(&self, info: &mut LogInfo) {
+    fn transform(&self, mut info: LogInfo) -> Option<LogInfo> {
         let timestamp = self.format_timestamp();
 
         match &self.options {
@@ -49,6 +49,7 @@ impl LogFormat for TimestampFormat {
                 info.meta.insert("timestamp".to_string(), json!(timestamp));
             }
         }
+        Some(info)
     }
 }
 /*

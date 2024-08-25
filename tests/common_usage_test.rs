@@ -2,7 +2,7 @@ use logform::{colorize_builder, combine, json, printf, simple, timestamp, LogInf
 
 #[test]
 pub fn initialize_and_test_formats() {
-    let mut info = LogInfo::new("info", "This is a test message");
+    let log_info = LogInfo::new("info", "This is a test message");
 
     let format = combine(vec![
         timestamp(None),
@@ -20,24 +20,24 @@ pub fn initialize_and_test_formats() {
         }),
     ]);
 
-    format.transform(&mut info);
-    println!("{}", info.message);
+    let log_info = format.transform(log_info).unwrap();
+    println!("{}", log_info.message);
 }
 
 #[test]
 fn test_json() {
-    let mut log_info = LogInfo::new("info", "This is a test message");
+    let log_info = LogInfo::new("info", "This is a test message");
 
     // Apply the simple format
     let simple_format = simple();
-    simple_format.transform(&mut log_info);
+    let log_info = simple_format.transform(log_info).unwrap();
     println!("Simple format: {}", log_info.message);
 
     // Reset log_info for JSON format
-    log_info.message = "This is a test message".to_string();
+    let log_info = LogInfo::new("info", "This is a test message");
 
     // Apply the JSON format
     let json_format = json();
-    json_format.transform(&mut log_info);
+    let log_info = json_format.transform(log_info).unwrap();
     println!("JSON format: {}", log_info.message);
 }

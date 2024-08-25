@@ -44,12 +44,13 @@ impl Colorizer {
     }
 
     fn colorize(&self, color_code: &str, text: &str) -> String {
-        format!("{}{}{}", color_code, text, "\x1b[0m")
+        //format!("{}{}{}", color_code, text, "\x1b[0m")
+        format!("{}{}{}", color_code, text, self.color_map["reset"])
     }
 }
 
 impl LogFormat for Colorizer {
-    fn transform(&self, info: &mut LogInfo) {
+    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
         // Get the color name for the level
         let level_color_name = self
             .colors
@@ -62,13 +63,17 @@ impl LogFormat for Colorizer {
             .get(level_color_name)
             .unwrap_or(&self.color_map["reset"]);
 
+        let mut new_info = info.clone();
+
         if self.options.all || (self.options.message && !info.message.is_empty()) {
-            info.message = self.colorize(color_code, &info.message);
+            new_info.message = self.colorize(color_code, &info.message);
         }
 
         if self.options.level || self.options.all {
-            info.level = self.colorize(color_code, &info.level);
+            new_info.level = self.colorize(color_code, &info.level);
         }
+
+        Some(new_info)
     }
 }
 /*
@@ -145,10 +150,10 @@ mod tests {
             .build();
 
         // Create a log info object
-        let mut log_info = LogInfo::new("info", "This is an info message");
+        let log_info = LogInfo::new("info", "This is an info message");
 
         // Apply the colorizer to the log info
-        colorizer_format.transform(&mut log_info);
+        let log_info = colorizer_format.transform(log_info).unwrap();
 
         // Print the transformed (colored) log message to the console
         println!("{}: {}", log_info.level, log_info.message);
@@ -157,7 +162,7 @@ mod tests {
     #[test]
     fn test_color_with_json_format() {
         // Create a LogInfo instance with some initial data
-        let mut log_info = LogInfo {
+        let log_info = LogInfo {
             level: "info".to_string(),
             message: "Test message".to_string(),
             meta: HashMap::new(),
@@ -165,7 +170,7 @@ mod tests {
 
         // Apply JsonFormat
         let json_format = json();
-        json_format.transform(&mut log_info);
+        let log_info = json_format.transform(log_info).unwrap();
 
         // Define some colors for different log levels
         let colorizer_format = colorize_builder()
@@ -176,7 +181,7 @@ mod tests {
             .build();
 
         // Apply ColorizeFormat
-        colorizer_format.transform(&mut log_info);
+        let log_info = colorizer_format.transform(log_info).unwrap();
 
         println!("{}", log_info.message);
     }
@@ -184,7 +189,7 @@ mod tests {
     #[test]
     fn test_color_with_simple_format() {
         // Create a LogInfo instance with some initial data
-        let mut log_info = LogInfo {
+        let log_info = LogInfo {
             level: "info".to_string(),
             message: "Test message".to_string(),
             meta: HashMap::new(),
@@ -193,7 +198,7 @@ mod tests {
         let timestamp_format = timestamp(None);
         // Apply SimpleFormat
         let simple_format = simple();
-        timestamp_format.transform(&mut log_info);
+        let log_info = timestamp_format.transform(log_info).unwrap();
         //simple_format.transform(&mut log_info);
 
         // Define some colors for different log levels
@@ -205,8 +210,8 @@ mod tests {
             .build();
 
         // Apply ColorizeFormat
-        colorizer_format.transform(&mut log_info);
-        simple_format.transform(&mut log_info);
+        let log_info = colorizer_format.transform(log_info).unwrap();
+        let log_info = simple_format.transform(log_info).unwrap();
 
         println!("{}", log_info.message);
     }

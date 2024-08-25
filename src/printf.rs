@@ -17,8 +17,13 @@ impl<F> LogFormat for PrintfFormat<F>
 where
     F: Fn(&LogInfo) -> String + Send + Sync,
 {
-    fn transform(&self, info: &mut LogInfo) {
-        info.message = (self.formatter)(info);
+    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
+        let formatted_message = (self.formatter)(&info);
+        Some(LogInfo {
+            level: info.level,
+            message: formatted_message,
+            meta: info.meta,
+        })
     }
 }
 /*

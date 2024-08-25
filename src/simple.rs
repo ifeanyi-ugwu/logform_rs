@@ -3,7 +3,7 @@ use crate::log_alt::{BoxedLogFormat, LogFormat, LogInfo};
 pub struct SimpleFormat;
 
 impl LogFormat for SimpleFormat {
-    fn transform(&self, info: &mut LogInfo) {
+    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
         let padding = info
             .meta
             .get("padding")
@@ -24,7 +24,11 @@ impl LogFormat for SimpleFormat {
             message.push_str(&format!(" {}", rest_string));
         }
 
-        info.message = message;
+        Some(LogInfo {
+            level: info.level,
+            message,
+            meta: info.meta,
+        })
     }
 }
 /*
@@ -45,7 +49,7 @@ mod tests {
     #[test]
     fn test_timestamp_and_simple_format() {
         // Create a LogInfo instance with some initial data
-        let mut log_info = LogInfo {
+        let log_info = LogInfo {
             level: "info".to_string(),
             message: "Test message".to_string(),
             meta: HashMap::new(),
@@ -53,11 +57,11 @@ mod tests {
 
         // Apply SimpleFormat
         let timestamp_format = timestamp(None);
-        timestamp_format.transform(&mut log_info);
+        let log_info = timestamp_format.transform(log_info).unwrap();
 
         // Apply JsonFormat
         let simple_format = simple();
-        simple_format.transform(&mut log_info);
+        let log_info = simple_format.transform(log_info).unwrap();
 
         println!("{}", log_info.message);
     }

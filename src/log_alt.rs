@@ -2,11 +2,12 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 pub trait LogFormat {
-    fn transform(&self, info: &mut LogInfo);
+    fn transform(&self, info: LogInfo) -> Option<LogInfo>;
 }
 
 pub type BoxedLogFormat = Box<dyn LogFormat + Send + Sync>;
 
+#[derive(Debug, Clone)]
 pub struct LogInfo {
     pub level: String,
     pub message: String,

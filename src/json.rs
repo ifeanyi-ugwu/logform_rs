@@ -4,7 +4,7 @@ use serde_json::Value;
 pub struct JsonFormat;
 
 impl LogFormat for JsonFormat {
-    fn transform(&self, info: &mut LogInfo) {
+    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
         // Create a JSON object including the level, message, and other meta data
         let mut log_object = serde_json::Map::new();
 
@@ -17,7 +17,14 @@ impl LogFormat for JsonFormat {
         }
 
         // Convert the log object to a JSON string
-        info.message = Value::Object(log_object).to_string();
+        let json_message = Value::Object(log_object).to_string();
+
+        // Return a new LogInfo object with the JSON message
+        Some(LogInfo {
+            level: info.level,
+            message: json_message,
+            meta: info.meta,
+        })
     }
 }
 /*
@@ -38,7 +45,7 @@ mod tests {
     #[test]
     fn test_timestamp_and_json_format() {
         // Create a LogInfo instance with some initial data
-        let mut log_info = LogInfo {
+        let log_info = LogInfo {
             level: "info".to_string(),
             message: "Test message".to_string(),
             meta: HashMap::new(),
@@ -50,11 +57,11 @@ mod tests {
             .build();
 
         // Apply TimestampFormat
-        timestamp_format.transform(&mut log_info);
+        let log_info = timestamp_format.transform(log_info).unwrap();
 
         // Apply JsonFormat
         let json_format = json();
-        json_format.transform(&mut log_info);
+        let log_info = json_format.transform(log_info).unwrap();
 
         println!("{}", log_info.message);
     }

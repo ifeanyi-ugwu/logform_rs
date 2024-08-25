@@ -11,10 +11,18 @@ impl CombineFormat {
 }
 
 impl LogFormat for CombineFormat {
-    fn transform(&self, info: &mut LogInfo) {
+    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
+        let mut current_info = info;
+
         for format in &self.formats {
-            format.transform(info);
+            if let Some(new_info) = format.transform(current_info) {
+                current_info = new_info;
+            } else {
+                return None;
+            }
         }
+
+        Some(current_info)
     }
 }
 /*
