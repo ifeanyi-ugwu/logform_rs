@@ -1,11 +1,8 @@
-use crate::{
-    create_format,
-    log_alt::{LogFormat, LogInfo},
-};
+use crate::{create_format, log_alt::LogInfo, Format};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 
-pub fn json() -> impl LogFormat + Clone {
+pub fn json() -> Format {
     create_format(|info: LogInfo, _opts: Option<&HashMap<String, String>>| {
         // Create a JSON object including the level, message, and other meta data
         let mut log_object = Map::new();
@@ -33,6 +30,7 @@ pub fn json() -> impl LogFormat + Clone {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::LogFormat;
     use serde_json::json;
     use std::collections::HashMap;
 

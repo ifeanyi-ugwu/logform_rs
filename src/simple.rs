@@ -1,48 +1,44 @@
-use crate::{
-    create_format,
-    log_alt::{LogFormat, LogInfo},
-};
+use crate::{create_format, log_alt::LogInfo, Format};
 use std::collections::HashMap;
 
-pub fn simple() -> impl LogFormat + Clone {
-    create_format(
-        |mut info: LogInfo, _opts: Option<&HashMap<String, String>>| {
-            // Get padding if present in meta, otherwise default to an empty string
-            let padding = info
-                .meta
-                .get("padding")
-                .and_then(|v| v.get(&info.level))
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
+pub fn simple() -> Format {
+    create_format(|info: LogInfo, _opts: Option<&HashMap<String, String>>| {
+        // Get padding if present in meta, otherwise default to an empty string
+        let padding = info
+            .meta
+            .get("padding")
+            .and_then(|v| v.get(&info.level))
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
 
-            // Start constructing the message with level, padding, and main message
-            let mut message = format!("{}:{} {}", info.level, padding, info.message);
+        // Start constructing the message with level, padding, and main message
+        let mut message = format!("{}:{} {}", info.level, padding, info.message);
 
-            // Clone the meta to filter out certain fields
-            let mut rest = info.meta.clone();
-            rest.remove("level");
-            rest.remove("message");
-            rest.remove("splat");
+        // Clone the meta to filter out certain fields
+        let mut rest = info.meta.clone();
+        rest.remove("level");
+        rest.remove("message");
+        rest.remove("splat");
 
-            // If there are remaining fields, stringify them and append to the message
-            if !rest.is_empty() {
-                let rest_string = serde_json::to_string(&rest).unwrap_or_default();
-                message.push_str(&format!(" {}", rest_string));
-            }
+        // If there are remaining fields, stringify them and append to the message
+        if !rest.is_empty() {
+            let rest_string = serde_json::to_string(&rest).unwrap_or_default();
+            message.push_str(&format!(" {}", rest_string));
+        }
 
-            // Return the new LogInfo with the constructed message
-            Some(LogInfo {
-                level: info.level,
-                message,
-                meta: info.meta,
-            })
-        },
-    )
+        // Return the new LogInfo with the constructed message
+        Some(LogInfo {
+            level: info.level,
+            message,
+            meta: info.meta,
+        })
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::LogFormat;
     use serde_json::json;
     use std::collections::HashMap;
 

@@ -1,4 +1,4 @@
-use crate::{create_format, LogFormat, LogInfo};
+use crate::{create_format, Format, LogInfo};
 use colored::*;
 use std::collections::HashMap;
 
@@ -69,7 +69,7 @@ impl Colorizer {
     }
 }
 
-pub fn colorize(opts: Option<HashMap<String, Vec<String>>>) -> impl LogFormat + Clone {
+pub fn colorize(opts: Option<HashMap<String, Vec<String>>>) -> Format {
     let colorizer = Colorizer::new(opts);
     create_format(
         move |info: LogInfo, options: Option<&HashMap<String, String>>| {
@@ -81,6 +81,7 @@ pub fn colorize(opts: Option<HashMap<String, Vec<String>>>) -> impl LogFormat + 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::LogFormat;
     use colored::control::set_override;
     use serde_json::json;
     use std::collections::HashMap;

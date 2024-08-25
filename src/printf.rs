@@ -1,7 +1,4 @@
-use crate::{
-    create_format,
-    log_alt::{LogFormat, LogInfo},
-};
+use crate::{create_format, log_alt::LogInfo, Format};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -27,7 +24,7 @@ impl Printf {
     }
 }
 
-pub fn printf<T>(template_fn: T) -> impl LogFormat + Clone
+pub fn printf<T>(template_fn: T) -> Format
 where
     T: Fn(&LogInfo) -> String + Send + Sync + 'static,
 {
@@ -42,6 +39,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::LogFormat;
     use serde_json::json;
     use std::collections::HashMap;
 

@@ -1,12 +1,9 @@
-use crate::{
-    create_format,
-    log_alt::{LogFormat, LogInfo},
-};
+use crate::{create_format, log_alt::LogInfo, Format};
 use chrono::{DateTime, Utc};
 use serde_json::json;
 use std::collections::HashMap;
 
-pub fn timestamp() -> impl LogFormat + Clone {
+pub fn timestamp() -> Format {
     create_format(
         |mut info: LogInfo, opts: Option<&HashMap<String, String>>| {
             let format = opts
@@ -66,6 +63,7 @@ pub fn timestamp_builder() -> TimestampBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::LogFormat;
     use std::collections::HashMap;
 
     #[test]

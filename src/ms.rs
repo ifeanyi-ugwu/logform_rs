@@ -1,14 +1,14 @@
-use crate::{create_format, LogFormat, LogInfo};
+use crate::{create_format, Format, LogInfo};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::Mutex;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 lazy_static! {
     static ref PREV_TIME: Mutex<Instant> = Mutex::new(Instant::now());
 }
 
-pub fn time_diff_format() -> impl LogFormat + Clone {
+pub fn time_diff_format() -> Format {
     create_format(
         move |mut info: LogInfo, _options: Option<&HashMap<String, String>>| {
             let curr = Instant::now();
@@ -27,6 +27,7 @@ pub fn time_diff_format() -> impl LogFormat + Clone {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::LogFormat;
     use serde_json::json;
     use std::collections::HashMap;
     use std::thread::sleep;

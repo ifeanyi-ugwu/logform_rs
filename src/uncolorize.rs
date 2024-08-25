@@ -1,8 +1,8 @@
-use crate::{create_format, LogFormat, LogInfo};
+use crate::{create_format, Format, LogInfo};
 use regex::Regex;
 use std::collections::HashMap;
 
-pub fn uncolorize() -> impl LogFormat + Clone {
+pub fn uncolorize() -> Format {
     create_format(
         move |mut info: LogInfo, options: Option<&HashMap<String, String>>| {
             let binding = HashMap::new();
@@ -30,7 +30,7 @@ fn strip_colors(input: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::colorize;
+    use crate::{colorize, LogFormat};
     use colored::control::set_override;
     use serde_json::json;
     use std::collections::HashMap;
