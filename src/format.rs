@@ -15,9 +15,31 @@ pub struct Format {
     pub options: FormatOptions,
 }
 
+impl Format {
+    pub fn with_option(mut self, key: &str, value: &str) -> Self {
+        if self.options.is_none() {
+            self.options = Some(HashMap::new());
+        }
+        self.options
+            .as_mut()
+            .unwrap()
+            .insert(key.to_string(), value.to_string());
+        self
+    }
+
+    fn merge_options(&self, opts: FormatOptions) -> FormatOptions {
+        let mut final_opts = self.options.clone().unwrap_or_default();
+        if let Some(mut incoming_opts) = opts {
+            final_opts.extend(incoming_opts.drain());
+        }
+        Some(final_opts)
+    }
+}
+
 impl LogFormat for Format {
     fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo> {
-        (self.format_fn)(info, opts)
+        let merged_opts = self.merge_options(opts);
+        (self.format_fn)(info, merged_opts)
     }
 }
 
