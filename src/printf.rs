@@ -37,7 +37,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::LogFormat;
 
     #[test]
     fn test_printf_formatter() {

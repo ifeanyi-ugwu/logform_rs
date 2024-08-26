@@ -64,7 +64,6 @@ pub fn timestamp_builder() -> TimestampBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::LogFormat;
     use std::collections::HashMap;
 
     #[test]

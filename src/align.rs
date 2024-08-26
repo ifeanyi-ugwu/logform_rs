@@ -11,7 +11,6 @@ pub fn align() -> Format {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::LogFormat;
 
     #[test]
     fn test_align_format() {

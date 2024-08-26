@@ -29,7 +29,6 @@ pub fn json() -> Format {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::LogFormat;
 
     #[test]
     fn test_json_formatter() {

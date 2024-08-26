@@ -40,7 +40,6 @@ pub fn pretty_print() -> Format {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::LogFormat;
     use serde_json::json;
 
     #[test]

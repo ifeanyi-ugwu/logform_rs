@@ -1,4 +1,4 @@
-use logform::{colorize, combine, json, printf, simple, timestamp, LogFormat, LogInfo};
+use logform::{colorize, combine, json, printf, simple, timestamp, LogInfo};
 
 #[test]
 pub fn initialize_and_test_formats() {

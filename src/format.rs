@@ -3,10 +3,6 @@ use std::{collections::HashMap, sync::Arc};
 
 pub type FormatOptions = Option<HashMap<String, String>>;
 
-pub trait LogFormat: Clone {
-    fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo>;
-}
-
 // a cloneable trait object
 type BoxedLogFormatFn = Arc<dyn Fn(LogInfo, FormatOptions) -> Option<LogInfo> + Send + Sync>;
 
@@ -16,6 +12,11 @@ pub struct Format {
 }
 
 impl Format {
+    pub fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo> {
+        let merged_opts = self.merge_options(opts);
+        (self.format_fn)(info, merged_opts)
+    }
+
     pub fn with_option(mut self, key: &str, value: &str) -> Self {
         if self.options.is_none() {
             self.options = Some(HashMap::new());
@@ -33,13 +34,6 @@ impl Format {
             final_opts.extend(incoming_opts.drain());
         }
         Some(final_opts)
-    }
-}
-
-impl LogFormat for Format {
-    fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo> {
-        let merged_opts = self.merge_options(opts);
-        (self.format_fn)(info, merged_opts)
     }
 }
 

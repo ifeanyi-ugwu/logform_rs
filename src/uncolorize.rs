@@ -28,7 +28,7 @@ fn strip_colors(input: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{colorize, LogFormat};
+    use crate::colorize;
     use colored::control::set_override;
     use serde_json::json;
     use std::collections::HashMap;

@@ -99,7 +99,6 @@ pub fn colorize(opts: Option<HashMap<String, String>>) -> Format {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::LogFormat;
     use colored::control::set_override;
     use serde_json::json;
     use std::collections::HashMap;

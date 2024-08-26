@@ -1,4 +1,4 @@
-use crate::{Format, FormatOptions, LogFormat, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use std::sync::Arc;
 
 pub fn combine(formats: Vec<Format>) -> Format {
