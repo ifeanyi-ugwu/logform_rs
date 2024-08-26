@@ -63,16 +63,33 @@ impl Colorizer {
             self.merge_options(incoming_opts);
         }
 
-        if self.options.get("all").is_some() {
+        if self
+            .options
+            .get("all")
+            .map(|v| v == "true")
+            .unwrap_or(false)
+        {
             info.message = self.colorize(&info.level, &info.message);
             info.level = self.colorize(&info.level, &info.level);
-        } else {
-            if self.options.get("level").is_some() {
-                info.level = self.colorize(&info.level, &info.level);
-            }
-            if self.options.get("message").is_some() {
-                info.message = self.colorize(&info.level, &info.message);
-            }
+            return Some(info);
+        }
+
+        if self
+            .options
+            .get("level")
+            .map(|v| v == "true")
+            .unwrap_or(false)
+        {
+            info.level = self.colorize(&info.level, &info.level);
+        }
+
+        if self
+            .options
+            .get("message")
+            .map(|v| v == "true")
+            .unwrap_or(false)
+        {
+            info.message = self.colorize(&info.level, &info.message);
         }
 
         Some(info)
