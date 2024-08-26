@@ -6,8 +6,9 @@ pub fn combine(formats: Vec<Format>) -> Format {
         let mut obj = info;
 
         for format in &formats {
-            let format_opts = format.options.clone();
-            obj = match format.transform(obj.clone(), format_opts) {
+            //since options are internally merged during transform, no need to pass format_opts here
+            // let format_opts = format.options.clone();
+            obj = match format.transform(obj.clone(), None) {
                 Some(new_info) => new_info,
                 None => return None,
             };
