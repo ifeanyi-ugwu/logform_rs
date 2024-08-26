@@ -31,7 +31,6 @@ mod tests {
     use crate::colorize;
     use colored::control::set_override;
     use serde_json::json;
-    use std::collections::HashMap;
 
     #[test]
     fn test_uncolorize_formatter() {
@@ -39,23 +38,16 @@ mod tests {
         set_override(true);
 
         // Step 1: Colorize
-        let mut opts = HashMap::new();
-        opts.insert("all".to_string(), "true".to_string());
-        opts.insert(
-            "colors".to_string(),
-            json!({
-                "info": ["blue"],
-                "error": ["red", "bold"]
-            })
-            .to_string(),
-        );
-        let colorizer = colorize(Some(opts));
+        let colorizer = colorize()
+            .with_option(
+                "colors",
+                &json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
+            )
+            .with_option("all", "true");
 
         let info = LogInfo::new("info", "This is an info message").add_meta("key", "value");
 
-        let opts = Some(HashMap::from([("all".to_string(), "true".to_string())]));
-
-        let colorized_info = colorizer.transform(info, opts).unwrap();
+        let colorized_info = colorizer.transform(info, None).unwrap();
 
         // Step 2: Uncolorize
         let uncolorizer = uncolorize();

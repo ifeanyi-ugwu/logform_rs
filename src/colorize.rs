@@ -88,8 +88,8 @@ impl Colorizer {
     }
 }
 
-pub fn colorize(opts: Option<HashMap<String, String>>) -> Format {
-    let colorizer = Colorizer::new(opts.clone());
+pub fn colorize() -> Format {
+    let colorizer = Colorizer::new(None);
     create_format(move |info: LogInfo, options: FormatOptions| {
         let mut colorizer = colorizer.clone();
         colorizer.transform(info, options)
@@ -101,25 +101,13 @@ mod tests {
     use super::*;
     use colored::control::set_override;
     use serde_json::json;
-    use std::collections::HashMap;
 
     #[test]
     fn test_colorize_formatter() {
         // Force colored output even if not in a TTY environment
         set_override(true);
 
-        let mut opts = HashMap::new();
-        opts.insert("all".to_string(), "true".to_string());
-        opts.insert(
-            "colors".to_string(),
-            json!({
-                "info": ["blue"],
-                "error": ["red", "bold",]
-            })
-            .to_string(),
-        );
-
-        let formatter = colorize(None)
+        let formatter = colorize()
             .with_option(
                 "colors",
                 &json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
@@ -128,12 +116,12 @@ mod tests {
 
         let info = LogInfo::new("info", "This is an info message").add_meta("key", "value");
 
-        let result = formatter.transform(info, Some(opts.clone())).unwrap();
+        let result = formatter.transform(info, None).unwrap();
         println!("Colorized info: {} - {}", result.level, result.message);
 
         let error_info = LogInfo::new("error", "This is an error message");
 
-        let result_error = formatter.transform(error_info, Some(opts)).unwrap();
+        let result_error = formatter.transform(error_info, None).unwrap();
         println!(
             "Colorized error: {} - {}",
             result_error.level, result_error.message

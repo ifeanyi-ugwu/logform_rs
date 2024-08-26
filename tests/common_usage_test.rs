@@ -6,7 +6,7 @@ pub fn initialize_and_test_formats() {
 
     let format = combine(vec![
         timestamp(),
-        colorize(None)
+        colorize()
             .with_option(
                 "colors",
                 &serde_json::json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
