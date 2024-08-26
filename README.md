@@ -3,17 +3,17 @@
 A flexible log formatting library for Rust, inspired by the Node.js logform package.
 
 ```rust
-use logform::{combine, colorize_builder, json, printf, timestamp, LogInfo};
+use logform::{combine, colorize, json, printf, timestamp, LogInfo};
 
 let format = combine(vec![
-    timestamp(None),
-    colorize_builder().add_color("info", "green").build(),
+    timestamp(),
+    colorize().with_option("colors", r#"{"info": ["blue"]}"#),
     printf(|info| format!("{} - {}: {}", info.meta["timestamp"], info.level, info.message)),
 ]);
 
 let mut info = LogInfo::new("info", "Hello, logform-rs!");
-format.transform(&mut info);
-println!("{}", info.message);
+let formatted_info = format.transform(info, None).unwrap();
+println!("{}", formatted_info.message);
 ```
 
 ## Features
@@ -21,17 +21,22 @@ println!("{}", info.message);
 - Composable log formats
 - Various built-in formats
 - Extensible with custom formats
+- Chainable options for each format
 
 ## Table of Contents
 
 - [LogInfo Objects](#loginfo-objects)
 - [Formats](#formats)
+  - [Align](#align)
   - [Colorize](#colorize)
   - [Combine](#combine)
   - [JSON](#json)
+  - [Ms](#ms)
+  - [PrettyPrint](#prettyprint)
   - [Printf](#printf)
   - [Simple](#simple)
   - [Timestamp](#timestamp)
+  - [Uncolorize](#uncolorize)
 
 ## LogInfo Objects
 
@@ -47,17 +52,22 @@ pub struct LogInfo {
 
 ## Formats
 
+### Align
+
+The `align` format adds a tab character before the message.
+
+```rust
+let aligned_format = align();
+```
+
 ### Colorize
 
 The `colorize` format adds colors to log levels and messages.
 
 ```rust
-let colorizer = colorize_builder()
-    .add_color("info", "green")
-    .add_color("warn", "yellow")
-    .add_color("error", "red")
-    .set_all(true)
-    .build();
+let colorizer = colorize()
+    .with_option("colors", r#"{"info": ["blue"], "error": ["red", "bold"]}"#)
+    .with_option("all", "true");
 ```
 
 ### Combine
@@ -66,9 +76,9 @@ The `combine` format allows you to chain multiple formats together.
 
 ```rust
 let combined_format = combine(vec![
-    timestamp(None),
+    timestamp(),
     json(),
-    colorize_builder().add_color("info", "blue").build(),
+    colorize().with_option("colors", r#"{"info": ["blue"]}"#),
 ]);
 ```
 
@@ -78,6 +88,22 @@ The `json` format converts the log info into a JSON string.
 
 ```rust
 let json_format = json();
+```
+
+### Ms
+
+The `ms` format adds the time in milliseconds since the last log message.
+
+```rust
+let ms_format = ms();
+```
+
+### PrettyPrint
+
+The `pretty_print` format provides a more readable output of the log info.
+
+```rust
+let pretty_format = pretty_print().with_option("colorize", "true");
 ```
 
 ### Printf
@@ -103,10 +129,17 @@ let simple_format = simple();
 The `timestamp` format adds a timestamp to the log info.
 
 ```rust
-let timestamp_format = timestamp_builder()
-    .format("%Y-%m-%d %H:%M:%S")
-    .alias("time")
-    .build();
+let timestamp_format = timestamp()
+    .with_option("format", "%Y-%m-%d %H:%M:%S")
+    .with_option("alias", "log_time");
+```
+
+### Uncolorize
+
+The `uncolorize` format removes ANSI color codes from the log info.
+
+```rust
+let uncolorize_format = uncolorize();
 ```
 
 ## Usage
@@ -124,13 +157,13 @@ Then, in your Rust code:
 use logform::{LogInfo, combine, timestamp, json};
 
 let format = combine(vec![
-    timestamp(None),
+    timestamp(),
     json(),
 ]);
 
-let mut log_info = LogInfo::new("info", "Test message");
-format.transform(&mut log_info);
-println!("{}", log_info.message);
+let info = LogInfo::new("info", "Test message");
+let formatted_info = format.transform(info, None).unwrap();
+println!("{}", formatted_info.message);
 ```
 
 ## Testing
