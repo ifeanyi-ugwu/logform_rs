@@ -23,43 +23,6 @@ pub fn timestamp() -> Format {
         Some(info)
     })
 }
-/*
-pub struct TimestampBuilder {
-    format: Option<String>,
-    alias: Option<String>,
-}
-
-impl TimestampBuilder {
-    pub fn new() -> Self {
-        Self {
-            format: None,
-            alias: None,
-        }
-    }
-
-    pub fn format(mut self, fmt: &str) -> Self {
-        self.format = Some(fmt.to_string());
-        self
-    }
-
-    pub fn alias(mut self, alias: &str) -> Self {
-        self.alias = Some(alias.to_string());
-        self
-    }
-
-    pub fn build(self) -> BoxedLogFormat {
-        let options = TimestampOptions {
-            format: self.format,
-            alias: self.alias,
-        };
-        Box::new(TimestampFormat::new(Some(options)))
-    }
-}
-
-pub fn timestamp_builder() -> TimestampBuilder {
-    TimestampBuilder::new()
-}
-*/
 
 #[cfg(test)]
 mod tests {
