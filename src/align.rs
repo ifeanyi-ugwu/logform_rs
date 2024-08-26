@@ -12,8 +12,6 @@ pub fn align() -> Format {
 mod tests {
     use super::*;
     use crate::LogFormat;
-    use serde_json::json;
-    use std::collections::HashMap;
 
     #[test]
     fn test_align_format() {
@@ -21,14 +19,7 @@ mod tests {
         let formatter = align();
 
         // Example log info
-        let mut meta = HashMap::new();
-        meta.insert("key".to_string(), json!("value"));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "Test message".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "Test message").add_meta("key", "value");
 
         // Apply the align formatter
         let result = formatter.transform(info, None).unwrap();

@@ -71,11 +71,7 @@ mod tests {
     fn test_timestamp_format() {
         let formatter = timestamp();
 
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "This is a log message".to_string(),
-            meta: HashMap::new(),
-        };
+        let info = LogInfo::new("info", "This is a log message");
 
         let result = formatter.transform(info, None).unwrap();
         println!("{:?}", result.meta);
@@ -84,11 +80,7 @@ mod tests {
         custom_opts.insert("format".to_string(), "%d/%m/%Y %H:%M:%S".to_string());
         custom_opts.insert("alias".to_string(), "log_time".to_string());
 
-        let info2 = LogInfo {
-            level: "info".to_string(),
-            message: "Another log message".to_string(),
-            meta: HashMap::new(),
-        };
+        let info2 = LogInfo::new("info", "Another log message");
 
         let result2 = formatter.transform(info2, Some(custom_opts)).unwrap();
         println!("{:?}", result2.meta);

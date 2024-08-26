@@ -62,11 +62,7 @@ mod tests {
         scream_opts.insert("yell".to_string(), "true".to_string());
         let scream = volume.clone();
 
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "sorry for making you YELL in your head!".to_string(),
-            meta: HashMap::new(),
-        };
+        let info = LogInfo::new("info", "sorry for making you YELL in your head!");
 
         let result = scream.transform(info, Some(scream_opts)).unwrap();
         println!("{}", result.message);
@@ -75,11 +71,7 @@ mod tests {
         whisper_opts.insert("whisper".to_string(), "true".to_string());
         let whisper = volume;
 
-        let info2 = LogInfo {
-            level: "info".to_string(),
-            message: "WHY ARE THEY MAKING US YELL SO MUCH!".to_string(),
-            meta: HashMap::new(),
-        };
+        let info2 = LogInfo::new("info", "WHY ARE THEY MAKING US YELL SO MUCH!");
 
         let result2 = whisper.transform(info2, Some(whisper_opts)).unwrap();
         println!("{}", result2.message);
@@ -98,23 +90,14 @@ mod tests {
 
         let format = ignore_private;
 
-        let mut public_info = LogInfo::new("error", "Public error to share");
-
-        public_info
-            .meta
-            .insert("private".to_string(), serde_json::json!("false"));
+        let public_info =
+            LogInfo::new("error", "Public error to share").add_meta("private", "false");
 
         let result = format.transform(public_info, None).unwrap();
         println!("{:?}", result.message);
 
-        let mut private_info = LogInfo {
-            level: "error".to_string(),
-            message: "This is super secret - hide it.".to_string(),
-            meta: HashMap::new(),
-        };
-        private_info
-            .meta
-            .insert("private".to_string(), serde_json::json!("true"));
+        let private_info =
+            LogInfo::new("error", "This is super secret - hide it.").add_meta("private", "true");
 
         let result = format.transform(private_info, None);
         println!("{:?}", result);

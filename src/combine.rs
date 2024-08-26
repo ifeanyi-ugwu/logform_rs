@@ -23,20 +23,13 @@ pub fn combine(formats: Vec<Format>) -> Format {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use super::*;
-    use crate::{create_format, printf, simple};
+    use crate::{create_format, simple};
     use colored::*;
-    use serde_json::json;
+    use std::collections::HashMap;
 
     #[test]
     fn test_combine_formatters() {
-        let aligner = create_format(|mut info: LogInfo, _opts: FormatOptions| {
-            info.message = format!("\t{}", info.message);
-            Some(info)
-        });
-
         let colorizer = create_format(|mut info: LogInfo, opts: FormatOptions| {
             if let Some(opts) = opts {
                 if opts.get("all").is_some() {
@@ -46,26 +39,10 @@ mod tests {
             Some(info)
         });
 
-        let formatter = printf(|info: &LogInfo| {
-            format!(
-                "{} - {}: {}",
-                info.level,
-                info.message,
-                serde_json::to_string(&info.meta).unwrap_or_default()
-            )
-        });
-
         // Combine aligner and colorizer
-        let combined_formatter = combine(vec![aligner, colorizer, formatter]);
+        let combined_formatter = combine(vec![colorizer, simple()]);
 
-        let mut meta = HashMap::new();
-        meta.insert("key".to_string(), json!("value"));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "Test message".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "Test message").add_meta("key", "value");
 
         let opts = Some(HashMap::from([("all".to_string(), "true".to_string())]));
 

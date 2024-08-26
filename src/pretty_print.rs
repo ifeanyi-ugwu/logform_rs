@@ -42,22 +42,15 @@ mod tests {
     use super::*;
     use crate::LogFormat;
     use serde_json::json;
-    use std::collections::HashMap;
 
     #[test]
     fn test_pretty_print_formatter() {
         let formatter = pretty_print();
 
-        let mut meta = HashMap::new();
-        meta.insert("user_id".to_string(), json!(12345));
-        meta.insert("session_id".to_string(), json!("abcde12345"));
-        meta.insert("extra_info".to_string(), json!({"key": "value"}));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "User logged in".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "User logged in")
+            .add_meta("user_id", 12345)
+            .add_meta("session_id", "abcde12345")
+            .add_meta("extra_info", json!({"key": "value"}));
 
         let result = formatter.transform(info, None).unwrap();
         println!("{}", result.message);

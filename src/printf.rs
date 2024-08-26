@@ -38,8 +38,6 @@ where
 mod tests {
     use super::*;
     use crate::LogFormat;
-    use serde_json::json;
-    use std::collections::HashMap;
 
     #[test]
     fn test_printf_formatter() {
@@ -52,14 +50,7 @@ mod tests {
             )
         });
 
-        let mut meta = HashMap::new();
-        meta.insert("key".to_string(), json!("value"));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "This is a message".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "This is a message").add_meta("key", "value");
 
         let result = formatter.transform(info, None).unwrap();
         println!("{}", result.message); // Check the formatted output

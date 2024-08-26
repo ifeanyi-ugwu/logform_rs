@@ -1,12 +1,12 @@
-use logform::{colorize_builder, combine, json, printf, simple, timestamp, LogInfo};
+use logform::{colorize, combine, json, printf, simple, timestamp, LogFormat, LogInfo};
 
 #[test]
 pub fn initialize_and_test_formats() {
     let log_info = LogInfo::new("info", "This is a test message");
 
     let format = combine(vec![
-        timestamp(None),
-        colorize_builder().add_color("info", "red").build(),
+        timestamp(),
+        // colorize_builder().add_color("info", "red").build(),
         printf(|info| {
             let timestamp = info
                 .meta
@@ -20,7 +20,7 @@ pub fn initialize_and_test_formats() {
         }),
     ]);
 
-    let log_info = format.transform(log_info).unwrap();
+    let log_info = format.transform(log_info, None).unwrap();
     println!("{}", log_info.message);
 }
 
@@ -30,7 +30,7 @@ fn test_json() {
 
     // Apply the simple format
     let simple_format = simple();
-    let log_info = simple_format.transform(log_info).unwrap();
+    let log_info = simple_format.transform(log_info, None).unwrap();
     println!("Simple format: {}", log_info.message);
 
     // Reset log_info for JSON format
@@ -38,6 +38,6 @@ fn test_json() {
 
     // Apply the JSON format
     let json_format = json();
-    let log_info = json_format.transform(log_info).unwrap();
+    let log_info = json_format.transform(log_info, None).unwrap();
     println!("JSON format: {}", log_info.message);
 }

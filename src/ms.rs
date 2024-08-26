@@ -25,8 +25,6 @@ pub fn ms() -> Format {
 mod tests {
     use super::*;
     use crate::LogFormat;
-    use serde_json::json;
-    use std::collections::HashMap;
     use std::thread::sleep;
     use std::time::Duration;
 
@@ -34,14 +32,7 @@ mod tests {
     fn test_time_diff_format() {
         let formatter = ms();
 
-        let mut meta = HashMap::new();
-        meta.insert("key".to_string(), json!("value"));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "Test message".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "Test message").add_meta("key", "value");
 
         // First transformation
         let result = formatter.transform(info.clone(), None).unwrap();

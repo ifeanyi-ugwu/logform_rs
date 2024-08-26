@@ -39,22 +39,19 @@ mod tests {
         set_override(true);
 
         // Step 1: Colorize
-        let mut color_map = HashMap::new();
-        color_map.insert("info".to_string(), vec!["blue".to_string()]);
-        color_map.insert(
-            "error".to_string(),
-            vec!["red".to_string(), "bold".to_string()],
+        let mut opts = HashMap::new();
+        opts.insert("all".to_string(), "true".to_string());
+        opts.insert(
+            "colors".to_string(),
+            json!({
+                "info": ["blue"],
+                "error": ["red", "bold"]
+            })
+            .to_string(),
         );
-        let colorizer = colorize(Some(color_map));
+        let colorizer = colorize(Some(opts));
 
-        let mut meta = HashMap::new();
-        meta.insert("key".to_string(), json!("value"));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "This is an info message".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "This is an info message").add_meta("key", "value");
 
         let opts = Some(HashMap::from([("all".to_string(), "true".to_string())]));
 

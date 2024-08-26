@@ -30,22 +30,14 @@ pub fn json() -> Format {
 mod tests {
     use super::*;
     use crate::LogFormat;
-    use serde_json::json;
-    use std::collections::HashMap;
 
     #[test]
     fn test_json_formatter() {
         let formatter = json();
 
-        let mut meta = HashMap::new();
-        meta.insert("user_id".to_string(), json!(12345));
-        meta.insert("session_id".to_string(), json!("abcde12345"));
-
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "User logged in".to_string(),
-            meta,
-        };
+        let info = LogInfo::new("info", "User logged in")
+            .add_meta("user_id", 12345)
+            .add_meta("session_id", "abcde12345");
 
         let result = formatter.transform(info, None).unwrap();
         println!("{}", result.message);
