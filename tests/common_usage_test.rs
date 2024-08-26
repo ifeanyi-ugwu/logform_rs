@@ -6,7 +6,12 @@ pub fn initialize_and_test_formats() {
 
     let format = combine(vec![
         timestamp(),
-        // colorize_builder().add_color("info", "red").build(),
+        colorize(None)
+            .with_option(
+                "colors",
+                &serde_json::json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
+            )
+            .with_option("all", "true"),
         printf(|info| {
             let timestamp = info
                 .meta
