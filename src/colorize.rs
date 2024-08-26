@@ -5,19 +5,31 @@ use std::collections::HashMap;
 #[derive(Clone)]
 pub struct Colorizer {
     all_colors: HashMap<String, Vec<String>>,
+    options: HashMap<String, String>,
 }
 
 impl Colorizer {
-    pub fn new(colors: Option<HashMap<String, Vec<String>>>) -> Self {
-        let mut all_colors = HashMap::new();
+    pub fn new(opts: Option<HashMap<String, String>>) -> Self {
+        let all_colors = HashMap::new();
+        let options = opts.unwrap_or_default();
 
-        if let Some(clrs) = colors {
-            for (level, color_list) in clrs {
-                all_colors.insert(level, color_list);
-            }
+        let mut colorizer = Colorizer {
+            all_colors,
+            options,
+        };
+
+        if let Some(colors) = colorizer.options.get("colors") {
+            // Parse the colors string and add to all_colors
+            let color_map: HashMap<String, Vec<String>> =
+                serde_json::from_str(colors).unwrap_or_default();
+            colorizer.add_colors(color_map);
         }
 
-        Colorizer { all_colors }
+        colorizer
+    }
+
+    pub fn add_colors(&mut self, colors: HashMap<String, Vec<String>>) {
+        self.all_colors.extend(colors);
     }
 
     pub fn colorize(&self, level: &str, message: &str) -> String {
@@ -32,6 +44,7 @@ impl Colorizer {
                     "magenta" => colored_message.magenta().to_string(),
                     "cyan" => colored_message.cyan().to_string(),
                     "white" => colored_message.white().to_string(),
+                    "bold" => colored_message.bold().to_string(),
                     _ => colored_message,
                 };
             }
@@ -42,36 +55,45 @@ impl Colorizer {
     }
 
     pub fn transform(
-        &self,
+        &mut self,
         mut info: LogInfo,
         opts: Option<HashMap<String, String>>,
     ) -> Option<LogInfo> {
-        println!("Original info: {:?}", info); // Debug print
+        if let Some(incoming_opts) = opts {
+            self.merge_options(incoming_opts);
+        }
 
-        if let Some(ref opts) = opts {
-            if opts.get("all").is_some() {
-                info.message = self.colorize(&info.level, &info.message);
-            }
-
-            if opts.get("level").is_some()
-                || opts.get("all").is_some()
-                || opts.get("message").is_none()
-            {
+        if self.options.get("all").is_some() {
+            info.message = self.colorize(&info.level, &info.message);
+            info.level = self.colorize(&info.level, &info.level);
+        } else {
+            if self.options.get("level").is_some() {
                 info.level = self.colorize(&info.level, &info.level);
             }
-
-            if opts.get("all").is_some() || opts.get("message").is_some() {
+            if self.options.get("message").is_some() {
                 info.message = self.colorize(&info.level, &info.message);
             }
         }
 
         Some(info)
     }
+
+    pub fn merge_options(&mut self, opts: HashMap<String, String>) {
+        self.options.extend(opts);
+        if let Some(colors) = self.options.get("colors") {
+            let color_map: HashMap<String, Vec<String>> =
+                serde_json::from_str(colors).unwrap_or_default();
+            self.add_colors(color_map);
+        }
+    }
 }
 
-pub fn colorize(opts: Option<HashMap<String, Vec<String>>>) -> Format {
-    let colorizer = Colorizer::new(opts);
-    create_format(move |info: LogInfo, options: FormatOptions| colorizer.transform(info, options))
+pub fn colorize(opts: Option<HashMap<String, String>>) -> Format {
+    let colorizer = Colorizer::new(opts.clone());
+    create_format(move |info: LogInfo, options: FormatOptions| {
+        let mut colorizer = colorizer.clone();
+        colorizer.transform(info, options)
+    })
 }
 
 #[cfg(test)]
@@ -87,43 +109,36 @@ mod tests {
         // Force colored output even if not in a TTY environment
         set_override(true);
 
-        let mut color_map = HashMap::new();
-        color_map.insert("info".to_string(), vec!["blue".to_string()]);
-        color_map.insert(
-            "error".to_string(),
-            vec!["red".to_string(), "bold".to_string()],
+        let mut opts = HashMap::new();
+        opts.insert("all".to_string(), "true".to_string());
+        opts.insert(
+            "colors".to_string(),
+            json!({
+                "info": ["blue"],
+                "error": ["red", "bold",]
+            })
+            .to_string(),
         );
 
-        let formatter = colorize(Some(color_map));
+        let formatter = colorize(None)
+            .with_option(
+                "colors",
+                &json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
+            )
+            .with_option("all", "true");
 
-        let mut meta = HashMap::new();
-        meta.insert("key".to_string(), json!("value"));
+        let info = LogInfo::new("info", "This is an info message").add_meta("key", "value");
 
-        let info = LogInfo {
-            level: "info".to_string(),
-            message: "This is an info message".to_string(),
-            meta,
-        };
+        let result = formatter.transform(info, Some(opts.clone())).unwrap();
+        println!("Colorized info: {} - {}", result.level, result.message);
 
-        let opts = Some(HashMap::from([
-            ("all".to_string(), "true".to_string()), // Ensure 'all' option is used
-        ]));
+        let error_info = LogInfo::new("error", "This is an error message");
 
-        let result = formatter.transform(info, opts.clone()).unwrap();
-        println!("{}", result.message);
-
-        // Expected output: Blue colored "info" message
-
-        let error_info = LogInfo {
-            level: "error".to_string(),
-            message: "This is an error message".to_string(),
-            meta: HashMap::new(),
-        };
-
-        let result_error = formatter.transform(error_info, opts).unwrap();
-        println!("{}", result_error.message);
-
-        // Expected output: Red and bold colored "error" message
+        let result_error = formatter.transform(error_info, Some(opts)).unwrap();
+        println!(
+            "Colorized error: {} - {}",
+            result_error.level, result_error.message
+        );
     }
 }
 
