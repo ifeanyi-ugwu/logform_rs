@@ -25,29 +25,16 @@ pub fn combine(formats: Vec<Format>) -> Format {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{create_format, simple};
-    use colored::*;
-    use std::collections::HashMap;
+    use crate::{simple, timestamp};
 
     #[test]
     fn test_combine_formatters() {
-        let colorizer = create_format(|mut info: LogInfo, opts: FormatOptions| {
-            if let Some(opts) = opts {
-                if opts.get("all").is_some() {
-                    info.message = info.message.red().to_string(); // Example colorizer
-                }
-            }
-            Some(info)
-        });
-
-        // Combine aligner and colorizer
-        let combined_formatter = combine(vec![colorizer, simple()]);
+        // Combine timestamp and simple
+        let combined_formatter = combine(vec![timestamp(), simple()]);
 
         let info = LogInfo::new("info", "Test message").add_meta("key", "value");
 
-        let opts = Some(HashMap::from([("all".to_string(), "true".to_string())]));
-
-        let result = combined_formatter.transform(info, opts).unwrap();
-        println!("Combined format result: {:?}", result.message);
+        let result = combined_formatter.transform(info, None).unwrap();
+        println!("{}", result.message);
     }
 }
