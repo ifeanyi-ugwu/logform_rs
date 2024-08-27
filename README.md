@@ -302,11 +302,17 @@ let uncolorize_format = uncolorize();
 
 ## Usage
 
-To use logform-rs in your project, add it to your `Cargo.toml`:
+To use logform in your project, add it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logform = "0.1.4"
+logform = "0.1"
+```
+
+or with
+
+```bash
+cargo add logform
 ```
 
 Then, in your Rust code:
