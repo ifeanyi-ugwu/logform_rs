@@ -1,4 +1,4 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use colored::*;
 use std::collections::HashMap;
 
@@ -107,7 +107,7 @@ impl Colorizer {
 
 pub fn colorize() -> Format {
     let colorizer = Colorizer::new(None);
-    create_format(move |info: LogInfo, options: FormatOptions| {
+    Format::new(move |info: LogInfo, options: FormatOptions| {
         let mut colorizer = colorizer.clone();
         colorizer.transform(info, options)
     })

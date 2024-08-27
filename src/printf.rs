@@ -1,4 +1,4 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -29,7 +29,7 @@ where
     T: Fn(&LogInfo) -> String + Send + Sync + 'static,
 {
     let printf_formatter = Printf::new(Arc::new(template_fn));
-    create_format(move |info: LogInfo, options: FormatOptions| {
+    Format::new(move |info: LogInfo, options: FormatOptions| {
         printf_formatter.transform(info, options.map(|o| o.clone()))
     })
 }

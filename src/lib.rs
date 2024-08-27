@@ -15,7 +15,7 @@ mod uncolorize;
 pub use align::align;
 pub use colorize::colorize;
 pub use combine::combine;
-pub use format::{create_format, Format, FormatOptions};
+pub use format::{Format, FormatOptions};
 pub use json::json;
 pub use log_info::LogInfo;
 pub use ms::ms;

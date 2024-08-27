@@ -12,6 +12,16 @@ pub struct Format {
 }
 
 impl Format {
+    pub fn new<F>(format_fn: F) -> Self
+    where
+        F: Fn(LogInfo, FormatOptions) -> Option<LogInfo> + Send + Sync + 'static,
+    {
+        Format {
+            format_fn: Arc::new(format_fn),
+            options: None,
+        }
+    }
+
     pub fn transform(&self, info: LogInfo, opts: FormatOptions) -> Option<LogInfo> {
         let merged_opts = self.merge_options(opts);
         (self.format_fn)(info, merged_opts)
@@ -46,16 +56,6 @@ impl Clone for Format {
     }
 }
 
-pub fn create_format<F>(format_fn: F) -> Format
-where
-    F: Fn(LogInfo, FormatOptions) -> Option<LogInfo> + Send + Sync + 'static,
-{
-    Format {
-        format_fn: Arc::new(format_fn),
-        options: None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn test_custom_format() {
-        let volume = create_format(|mut info: LogInfo, opts: FormatOptions| {
+        let volume = Format::new(|mut info: LogInfo, opts: FormatOptions| {
             if let Some(opts) = opts {
                 if opts.get("yell").is_some() {
                     info.message = info.message.to_uppercase();
@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn test_ignore_private() {
-        let ignore_private = create_format(|info: LogInfo, _opts: FormatOptions| {
+        let ignore_private = Format::new(|info: LogInfo, _opts: FormatOptions| {
             if let Some(private) = info.meta.get("private") {
                 if private == "true" {
                     return None;
@@ -110,7 +110,7 @@ mod tests {
             LogInfo::new("error", "Public error to share").add_meta("private", "false");
 
         let result = format.transform(public_info, None).unwrap();
-        println!("{:?}", result.message);
+        println!("{}", result.message);
 
         let private_info =
             LogInfo::new("error", "This is super secret - hide it.").add_meta("private", "true");

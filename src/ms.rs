@@ -1,4 +1,4 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::time::Instant;
@@ -8,7 +8,7 @@ lazy_static! {
 }
 
 pub fn ms() -> Format {
-    create_format(move |mut info: LogInfo, _options: FormatOptions| {
+    Format::new(move |mut info: LogInfo, _options: FormatOptions| {
         let curr = Instant::now();
         let mut prev_time = PREV_TIME.lock().unwrap();
         let diff = curr.duration_since(*prev_time);

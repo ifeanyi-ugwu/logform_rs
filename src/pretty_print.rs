@@ -1,8 +1,8 @@
-use crate::{create_format, format_json::format_json, Format, FormatOptions, LogInfo};
+use crate::{format_json::format_json, Format, FormatOptions, LogInfo};
 use serde_json::Value;
 
 pub fn pretty_print() -> Format {
-    create_format(|info: LogInfo, opts: FormatOptions| {
+    Format::new(|info: LogInfo, opts: FormatOptions| {
         // Clone the meta to work with
         let mut meta = info.meta.clone();
 

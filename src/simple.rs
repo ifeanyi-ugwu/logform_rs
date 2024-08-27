@@ -1,7 +1,7 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 
 pub fn simple() -> Format {
-    create_format(|info: LogInfo, _opts: FormatOptions| {
+    Format::new(|info: LogInfo, _opts: FormatOptions| {
         // Get padding if present in meta, otherwise default to an empty string
         let padding = info
             .meta

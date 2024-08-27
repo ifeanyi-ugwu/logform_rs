@@ -1,9 +1,9 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use regex::Regex;
 use std::collections::HashMap;
 
 pub fn uncolorize() -> Format {
-    create_format(move |mut info: LogInfo, options: FormatOptions| {
+    Format::new(move |mut info: LogInfo, options: FormatOptions| {
         let binding = HashMap::new();
         let opts = options.unwrap_or(binding);
 

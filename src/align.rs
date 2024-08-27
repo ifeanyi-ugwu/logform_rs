@@ -1,7 +1,7 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 
 pub fn align() -> Format {
-    create_format(move |mut info: LogInfo, _options: FormatOptions| {
+    Format::new(move |mut info: LogInfo, _options: FormatOptions| {
         // Add a tab character before the message
         info.message = format!("\t{}", info.message);
         Some(info)

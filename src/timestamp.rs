@@ -1,9 +1,9 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use chrono::{DateTime, Utc};
 use serde_json::json;
 
 pub fn timestamp() -> Format {
-    create_format(|mut info: LogInfo, opts: FormatOptions| {
+    Format::new(|mut info: LogInfo, opts: FormatOptions| {
         let format = opts
             .as_ref()
             .and_then(|o| o.get("format"))

@@ -1,8 +1,8 @@
-use crate::{create_format, Format, FormatOptions, LogInfo};
+use crate::{Format, FormatOptions, LogInfo};
 use serde_json::{Map, Value};
 
 pub fn json() -> Format {
-    create_format(|info: LogInfo, _opts: FormatOptions| {
+    Format::new(|info: LogInfo, _opts: FormatOptions| {
         // Create a JSON object including the level, message, and other meta data
         let mut log_object = Map::new();
 
