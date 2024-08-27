@@ -33,34 +33,42 @@ pub fn format_json_consistently(value: &Value, indent: usize, colorize: bool) ->
             }
         }
         Value::Object(map) => {
-            let mut result = String::from("{\n");
-            for (k, v) in map {
-                let formatted_value = format_json_consistently(v, indent + 2, colorize);
-                result.push_str(&format!(
-                    "{}  {}: {},\n",
-                    indent_str,
-                    k,
-                    formatted_value.trim()
-                ));
+            if map.is_empty() {
+                "{}".to_string()
+            } else {
+                let mut result = String::from("{\n");
+                for (k, v) in map {
+                    let formatted_value = format_json_consistently(v, indent + 2, colorize);
+                    result.push_str(&format!(
+                        "{}  {}: {},\n",
+                        indent_str,
+                        k,
+                        formatted_value.trim()
+                    ));
+                }
+                result.pop(); // Remove last newline
+                result.pop(); // Remove last comma
+                result.push_str(&format!("\n{}}}", indent_str));
+                result
             }
-            result.pop(); // Remove last newline
-            result.pop(); // Remove last comma
-            result.push_str(&format!("\n{}}}", indent_str));
-            result
         }
         Value::Array(arr) => {
-            let mut result = String::from("[\n");
-            for v in arr {
-                result.push_str(&format!(
-                    "{}  {},\n",
-                    indent_str,
-                    format_json_consistently(v, indent + 2, colorize).trim()
-                ));
+            if arr.is_empty() {
+                "[]".to_string()
+            } else {
+                let mut result = String::from("[\n");
+                for v in arr {
+                    result.push_str(&format!(
+                        "{}  {},\n",
+                        indent_str,
+                        format_json_consistently(v, indent + 2, colorize).trim()
+                    ));
+                }
+                result.pop(); // Remove last newline
+                result.pop(); // Remove last comma
+                result.push_str(&format!("\n{}]", indent_str));
+                result
             }
-            result.pop(); // Remove last newline
-            result.pop(); // Remove last comma
-            result.push_str(&format!("\n{}]", indent_str));
-            result
         }
     }
 }
