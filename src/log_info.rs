@@ -9,28 +9,35 @@ pub struct LogInfo {
 }
 
 impl LogInfo {
-    pub fn new(level: &str, message: &str) -> Self {
+    pub fn new<S: Into<String>>(level: S, message: S) -> Self {
         Self {
-            level: level.to_string(),
-            message: message.to_string(),
+            level: level.into(),
+            message: message.into(),
             meta: HashMap::new(),
         }
     }
 
-    pub fn add_meta<V>(mut self, key: &str, value: V) -> Self
+    pub fn add_meta<K, V>(mut self, key: K, value: V) -> Self
     where
+        K: Into<String>,
         V: Into<Value>,
     {
-        self.meta.insert(key.to_string(), value.into());
+        self.meta.insert(key.into(), value.into());
         self
     }
 
-    pub fn remove_meta(mut self, key: &str) -> Self {
-        self.meta.remove(key);
+    pub fn remove_meta<K>(mut self, key: K) -> Self
+    where
+        K: Into<String>,
+    {
+        self.meta.remove(&key.into());
         self
     }
 
-    pub fn get_meta(&self, key: &str) -> Option<&Value> {
-        self.meta.get(key)
+    pub fn get_meta<K>(&self, key: K) -> Option<&Value>
+    where
+        K: Into<String>,
+    {
+        self.meta.get(&key.into())
     }
 }
