@@ -60,10 +60,7 @@ mod tests {
         println!("Uncolored message: {}", uncolorized_info.message);
 
         // Assertions
-        assert_eq!(strip_colors(&colorized_info.level), "info");
-        assert_eq!(
-            strip_colors(&colorized_info.message),
-            "This is an info message"
-        );
+        assert_eq!(uncolorized_info.level, "info");
+        assert_eq!(uncolorized_info.message, "This is an info message");
     }
 }
