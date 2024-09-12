@@ -1,4 +1,5 @@
 use crate::LogInfo;
+use std::fmt;
 use std::{collections::HashMap, sync::Arc};
 
 pub type FormatOptions = Option<HashMap<String, String>>;
@@ -53,6 +54,16 @@ impl Clone for Format {
             format_fn: Arc::clone(&self.format_fn),
             options: self.options.clone(),
         }
+    }
+}
+
+impl fmt::Debug for Format {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // I cannot directly debug the closure, so I provided a placeholder
+        f.debug_struct("Format")
+            .field("format_fn", &"Function pointer") // Placeholder for the function pointer
+            .field("options", &self.options)
+            .finish()
     }
 }
 
