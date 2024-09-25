@@ -20,7 +20,7 @@ impl Colorizer {
 
         if let Some(colors) = colorizer.options.get("colors") {
             // Parse the colors string and add to all_colors
-            let color_map: HashMap<String, Vec<String>> =
+            let color_map: HashMap<String, serde_json::Value> =
                 serde_json::from_str(colors).unwrap_or_default();
             colorizer.add_colors(color_map);
         }
@@ -28,8 +28,20 @@ impl Colorizer {
         colorizer
     }
 
-    pub fn add_colors(&mut self, colors: HashMap<String, Vec<String>>) {
-        self.all_colors.extend(colors);
+    pub fn add_colors(&mut self, colors: HashMap<String, serde_json::Value>) {
+        for (level, color_val) in colors {
+            let color_list = match color_val {
+                // If it's a single string, wrap it in a Vec
+                serde_json::Value::String(color_str) => vec![color_str],
+                // If it's an array of strings, just use it directly
+                serde_json::Value::Array(color_arr) => color_arr
+                    .into_iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect(),
+                _ => vec![], // In case of unexpected format
+            };
+            self.all_colors.insert(level, color_list);
+        }
     }
 
     pub fn colorize(&self, level: &str, message: &str) -> String {
@@ -136,7 +148,7 @@ impl Colorizer {
     pub fn merge_options(&mut self, opts: HashMap<String, String>) {
         self.options.extend(opts);
         if let Some(colors) = self.options.get("colors") {
-            let color_map: HashMap<String, Vec<String>> =
+            let color_map: HashMap<String, serde_json::Value> =
                 serde_json::from_str(colors).unwrap_or_default();
             self.add_colors(color_map);
         }
@@ -165,7 +177,7 @@ mod tests {
         let formatter = colorize()
             .with_option(
                 "colors",
-                &json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
+                &json!({"info": "blue", "error": ["red", "bold"]}).to_string(),
             )
             .with_option("all", "true");
 
