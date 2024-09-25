@@ -2,7 +2,6 @@ mod align;
 mod colorize;
 mod combine;
 mod format;
-mod format_json;
 mod json;
 mod log_info;
 mod ms;
@@ -11,6 +10,7 @@ mod printf;
 mod simple;
 mod timestamp;
 mod uncolorize;
+mod utils;
 
 pub use align::align;
 pub use colorize::colorize;

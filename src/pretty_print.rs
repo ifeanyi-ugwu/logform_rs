@@ -1,4 +1,4 @@
-use crate::{format_json::format_json, Format, FormatOptions, LogInfo};
+use crate::{utils::format_json::format_json, Format, FormatOptions, LogInfo};
 use serde_json::Value;
 
 pub fn pretty_print() -> Format {
