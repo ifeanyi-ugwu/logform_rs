@@ -37,6 +37,8 @@ impl Colorizer {
             let mut colored_message = message.to_string();
             for color in color_list {
                 colored_message = match color.as_str() {
+                    // Foreground Colors
+                    "black" => colored_message.black().to_string(),
                     "red" => colored_message.red().to_string(),
                     "green" => colored_message.green().to_string(),
                     "yellow" => colored_message.yellow().to_string(),
@@ -44,7 +46,43 @@ impl Colorizer {
                     "magenta" => colored_message.magenta().to_string(),
                     "cyan" => colored_message.cyan().to_string(),
                     "white" => colored_message.white().to_string(),
+                    // Bright Foreground Colors
+                    "bright_black" => colored_message.bright_black().to_string(),
+                    "bright_red" => colored_message.bright_red().to_string(),
+                    "bright_green" => colored_message.bright_green().to_string(),
+                    "bright_yellow" => colored_message.bright_yellow().to_string(),
+                    "bright_blue" => colored_message.bright_blue().to_string(),
+                    "bright_magenta" => colored_message.bright_magenta().to_string(),
+                    "bright_cyan" => colored_message.bright_cyan().to_string(),
+                    "bright_white" => colored_message.bright_white().to_string(),
+                    // Background Colors
+                    "on_black" => colored_message.on_black().to_string(),
+                    "on_red" => colored_message.on_red().to_string(),
+                    "on_green" => colored_message.on_green().to_string(),
+                    "on_yellow" => colored_message.on_yellow().to_string(),
+                    "on_blue" => colored_message.on_blue().to_string(),
+                    "on_magenta" => colored_message.on_magenta().to_string(),
+                    "on_cyan" => colored_message.on_cyan().to_string(),
+                    "on_white" => colored_message.on_white().to_string(),
+                    // Bright Background Colors
+                    "on_bright_black" => colored_message.on_bright_black().to_string(),
+                    "on_bright_red" => colored_message.on_bright_red().to_string(),
+                    "on_bright_green" => colored_message.on_bright_green().to_string(),
+                    "on_bright_yellow" => colored_message.on_bright_yellow().to_string(),
+                    "on_bright_blue" => colored_message.on_bright_blue().to_string(),
+                    "on_bright_magenta" => colored_message.on_bright_magenta().to_string(),
+                    "on_bright_cyan" => colored_message.on_bright_cyan().to_string(),
+                    "on_bright_white" => colored_message.on_bright_white().to_string(),
+                    // Styles
                     "bold" => colored_message.bold().to_string(),
+                    "underline" => colored_message.underline().to_string(),
+                    "italic" => colored_message.italic().to_string(),
+                    "dimmed" => colored_message.dimmed().to_string(),
+                    "reversed" => colored_message.reversed().to_string(),
+                    "blink" => colored_message.blink().to_string(),
+                    "hidden" => colored_message.hidden().to_string(),
+                    "strikethrough" => colored_message.strikethrough().to_string(),
+                    // Default case
                     _ => colored_message,
                 };
             }
