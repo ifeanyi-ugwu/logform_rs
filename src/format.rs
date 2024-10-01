@@ -28,10 +28,14 @@ impl Format {
         (self.format_fn)(info, merged_opts)
     }
 
-    pub fn with_option(mut self, key: &str, value: &str) -> Self {
+    pub fn with_option<K, V>(mut self, key: K, value: V) -> Self
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
         self.options
             .get_or_insert_with(HashMap::new)
-            .insert(key.to_string(), value.to_string());
+            .insert(key.into(), value.into());
         self
     }
 
