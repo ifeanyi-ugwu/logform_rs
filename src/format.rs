@@ -40,11 +40,16 @@ impl Format {
     }
 
     fn merge_options(&self, opts: FormatOptions) -> FormatOptions {
-        let mut final_opts = self.options.clone().unwrap_or_default();
-        if let Some(mut incoming_opts) = opts {
-            final_opts.extend(incoming_opts.drain());
+        match (&self.options, opts) {
+            (None, None) => None,
+            (Some(existing), None) => Some(existing.clone()),
+            (None, Some(new_opts)) => Some(new_opts),
+            (Some(existing), Some(mut new_opts)) => {
+                let mut final_opts = existing.clone();
+                final_opts.extend(new_opts.drain());
+                Some(final_opts)
+            }
         }
-        Some(final_opts)
     }
 }
 
