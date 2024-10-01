@@ -29,12 +29,8 @@ impl Format {
     }
 
     pub fn with_option(mut self, key: &str, value: &str) -> Self {
-        if self.options.is_none() {
-            self.options = Some(HashMap::new());
-        }
         self.options
-            .as_mut()
-            .unwrap()
+            .get_or_insert_with(HashMap::new)
             .insert(key.to_string(), value.to_string());
         self
     }
