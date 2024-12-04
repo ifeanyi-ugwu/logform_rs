@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 use serde_json::{Map, Value};
 
 #[derive(Debug, Clone)]
 pub struct LogInfo {
     pub level: String,
     pub message: String,
-    pub meta: Map<String, Value>,
+    pub meta: HashMap<String, Value>,
 }
 
 impl LogInfo {
@@ -12,7 +14,7 @@ impl LogInfo {
         Self {
             level: level.into(),
             message: message.into(),
-            meta: Map::new(), //really not needed. no needed scenario for it to be a map instead of hashmap
+            meta: HashMap::new(),
         }
     }
 

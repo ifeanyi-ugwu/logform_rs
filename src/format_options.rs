@@ -1,12 +1,13 @@
+use std::collections::HashMap;
+
 use serde_json::{Map, Value};
 
-// TODO: change the key to &str if it wont introduce unnecessary complexities, and really there is no need for using Map if HashMap works and especially since order doesn't matter
 #[derive(Clone, Debug, Default)]
-pub struct FormatOptions(Map<String, Value>);
+pub struct FormatOptions(HashMap<String, Value>);
 
 impl FormatOptions {
     pub fn new() -> Self {
-        Self(Map::new())
+        Self(HashMap::new())
     }
 
     pub fn insert<T: Into<Value>>(mut self, key: &str, value: T) -> Self {
@@ -47,18 +48,9 @@ impl FormatOptions {
     }
 }
 
-impl From<Map<String, Value>> for FormatOptions {
-    fn from(map: Map<String, Value>) -> Self {
+impl From<HashMap<String, Value>> for FormatOptions {
+    fn from(map: HashMap<String, Value>) -> Self {
         FormatOptions(map)
-    }
-}
-
-impl From<Value> for FormatOptions {
-    fn from(value: Value) -> Self {
-        match value {
-            Value::Object(map) => FormatOptions(map),
-            _ => FormatOptions::new(),
-        }
     }
 }
 
