@@ -2,7 +2,6 @@ mod align;
 mod colorize;
 mod combine;
 mod format;
-mod format_options;
 mod json;
 mod log_info;
 mod ms;
