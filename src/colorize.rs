@@ -10,7 +10,7 @@ pub struct Colorizer {
 
 impl Colorizer {
     pub fn new(opts: Option<HashMap<String, String>>) -> Self {
-        let all_colors = HashMap::new();
+        let all_colors = default_colors();
         let options = opts.unwrap_or_default();
 
         let mut colorizer = Colorizer {
@@ -153,6 +153,16 @@ impl Colorizer {
             self.add_colors(color_map);
         }
     }
+}
+
+fn default_colors() -> HashMap<String, Vec<String>> {
+    let mut defaults = HashMap::new();
+    defaults.insert("error".to_string(), vec!["red".to_string()]);
+    defaults.insert("warn".to_string(), vec!["yellow".to_string()]);
+    defaults.insert("info".to_string(), vec!["green".to_string()]);
+    defaults.insert("debug".to_string(), vec!["blue".to_string()]);
+    defaults.insert("trace".to_string(), vec!["magenta".to_string()]);
+    defaults
 }
 
 pub fn colorize() -> Format {

@@ -28,23 +28,28 @@ impl Format {
         (self.format_fn)(info, merged_opts)
     }
 
-    pub fn with_option(mut self, key: &str, value: &str) -> Self {
-        if self.options.is_none() {
-            self.options = Some(HashMap::new());
-        }
+    pub fn with_option<K, V>(mut self, key: K, value: V) -> Self
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
         self.options
-            .as_mut()
-            .unwrap()
-            .insert(key.to_string(), value.to_string());
+            .get_or_insert_with(HashMap::new)
+            .insert(key.into(), value.into());
         self
     }
 
     fn merge_options(&self, opts: FormatOptions) -> FormatOptions {
-        let mut final_opts = self.options.clone().unwrap_or_default();
-        if let Some(mut incoming_opts) = opts {
-            final_opts.extend(incoming_opts.drain());
+        match (&self.options, opts) {
+            (None, None) => None,
+            (Some(existing), None) => Some(existing.clone()),
+            (None, Some(new_opts)) => Some(new_opts),
+            (Some(existing), Some(mut new_opts)) => {
+                let mut final_opts = existing.clone();
+                final_opts.extend(new_opts.drain());
+                Some(final_opts)
+            }
         }
-        Some(final_opts)
     }
 }
 
