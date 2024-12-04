@@ -1,5 +1,6 @@
 use serde_json::{Map, Value};
 
+// TODO: change the key to &str if it wont introduce unnecessary complexities, and really there is no need for using Map if HashMap works and especially since order doesn't matter
 #[derive(Clone, Debug, Default)]
 pub struct FormatOptions(Map<String, Value>);
 
