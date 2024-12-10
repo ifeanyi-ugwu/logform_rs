@@ -10,7 +10,7 @@ pub struct LogInfo {
 }
 
 impl LogInfo {
-    pub fn new<S: Into<String>>(level: S, message: S) -> Self {
+    pub fn new<L: Into<String>, M: Into<String>>(level: L, message: M) -> Self {
         Self {
             level: level.into(),
             message: message.into(),
