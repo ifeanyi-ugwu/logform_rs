@@ -123,13 +123,13 @@ mod tests {
         let format = ignore_private;
 
         let public_info =
-            LogInfo::new("error", "Public error to share").add_meta("private", "false");
+            LogInfo::new("error", "Public error to share").with_meta("private", "false");
 
         let result = format.transform(public_info, None).unwrap();
         println!("{}", result.message);
 
         let private_info =
-            LogInfo::new("error", "This is super secret - hide it.").add_meta("private", "true");
+            LogInfo::new("error", "This is super secret - hide it.").with_meta("private", "true");
 
         let result = format.transform(private_info, None);
         println!("{:?}", result);

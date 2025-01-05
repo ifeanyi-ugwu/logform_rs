@@ -52,13 +52,13 @@ mod tests {
         let formatter = pretty_print().with_option("colorize", "true");
 
         let info = LogInfo::new("info", "User logged in")
-            .add_meta("user_id", 12345)
-            .add_meta("session_id", "abcde12345")
-            .add_meta(
+            .with_meta("user_id", 12345)
+            .with_meta("session_id", "abcde12345")
+            .with_meta(
                 "extra_info",
                 json!({"null": null,"number": 1,"boolean": true,"inner_object":{"null": null,"number": 1,"boolean": true,}}),
             )
-            .add_meta("an array", json!(["abcde12345", true, 2])).add_meta("empty object", json!({})).add_meta("empty array", json!([]));
+            .with_meta("an array", json!(["abcde12345", true, 2])).with_meta("empty object", json!({})).with_meta("empty array", json!([]));
 
         let result = formatter.transform(info, None).unwrap();
         println!("{}", result.message);

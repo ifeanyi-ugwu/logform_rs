@@ -16,7 +16,7 @@ pub fn initialize_and_test_formats() {
         printf(|info| {
             format!(
                 "{} {}: {}",
-                info.meta["timestamp"], info.level, info.message
+                info.meta_as_str("timestamp").unwrap_or(""), info.level, info.message
             )
         }),
     ]);
@@ -63,13 +63,13 @@ let info = LogInfo {
 let info = LogInfo::new("info", "Hey! Log something?");
 
 //add meta
-let info = LogInfo::new("info", "Hey! Log something?").add_meta("key", "value");//you can chain more
+let info = LogInfo::new("info", "Hey! Log something?").with_meta("key", "value");//you can chain more
 
 //remove meta
-info.remove_meta("key");
+info.without_meta("key");
 
 //get meta
-info.get_meta("key");
+info.meta("key");
 ```
 
 Several of the formats in `logform` itself add to the meta:
@@ -148,7 +148,7 @@ fn test_combine_formatters() {
     // Combine timestamp and simple
     let combined_formatter = combine(vec![timestamp(), simple()]);
 
-    let info = LogInfo::new("info", "Test message").add_meta("key", "value");
+    let info = LogInfo::new("info", "Test message").with_meta("key", "value");
 
     let result = combined_formatter.transform(info, None).unwrap();
     println!("{}", result.message);
@@ -175,14 +175,14 @@ fn test_ignore_private() {
 
     let format = ignore_private;
 
-    let public_info = LogInfo::new("error", "Public error to share").add_meta("private", "false");
+    let public_info = LogInfo::new("error", "Public error to share").with_meta("private", "false");
 
     let result = format.transform(public_info, None).unwrap();
     println!("{}", result.message);
     //Public error to share
 
     let private_info =
-        LogInfo::new("error", "This is super secret - hide it.").add_meta("private", "true");
+        LogInfo::new("error", "This is super secret - hide it.").with_meta("private", "true");
 
     let result = format.transform(private_info, None);
     println!("{:?}", result);
@@ -270,7 +270,7 @@ The `printf` format allows you to define a custom formatting function.
 
 ```rust
 let printf_format = printf(|info| {
-    format!("{} - {}: {}", info.meta["timestamp"], info.level, info.message)
+    format!("{} - {}: {}", info.meta_as_str("timestamp").unwrap_or(""), info.level, info.message)
 });
 ```
 

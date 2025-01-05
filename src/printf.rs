@@ -49,7 +49,7 @@ mod tests {
             )
         });
 
-        let info = LogInfo::new("info", "This is a message").add_meta("key", "value");
+        let info = LogInfo::new("info", "This is a message").with_meta("key", "value");
 
         let result = formatter.transform(info, None).unwrap();
         println!("{}", result.message); // Check the formatted output

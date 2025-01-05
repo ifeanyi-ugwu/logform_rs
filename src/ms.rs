@@ -31,7 +31,7 @@ mod tests {
     fn test_time_diff_format() {
         let formatter = ms();
 
-        let info = LogInfo::new("info", "Test message").add_meta("key", "value");
+        let info = LogInfo::new("info", "Test message").with_meta("key", "value");
 
         // First transformation
         let result = formatter.transform(info.clone(), None).unwrap();

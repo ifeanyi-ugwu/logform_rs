@@ -191,7 +191,7 @@ mod tests {
             )
             .with_option("all", "true");
 
-        let info = LogInfo::new("info", "This is an info message").add_meta("key", "value");
+        let info = LogInfo::new("info", "This is an info message").with_meta("key", "value");
 
         let result = formatter.transform(info, None).unwrap();
         println!("Colorized info: {} - {}", result.level, result.message);
