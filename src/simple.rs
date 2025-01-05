@@ -45,9 +45,9 @@ mod tests {
         let formatter = simple();
 
         let info = LogInfo::new("info", "User logged in")
-            .add_meta("user_id", 12345)
-            .add_meta("session_id", "abcde12345")
-            .add_meta("padding", json!({"info": "    "}));
+            .with_meta("user_id", 12345)
+            .with_meta("session_id", "abcde12345")
+            .with_meta("padding", json!({"info": "    "}));
 
         let result = formatter.transform(info, None).unwrap();
         println!("{}", result.message);

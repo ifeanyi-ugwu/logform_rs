@@ -18,7 +18,7 @@ mod tests {
         let formatter = align();
 
         // Example log info
-        let info = LogInfo::new("info", "Test message").add_meta("key", "value");
+        let info = LogInfo::new("info", "Test message").with_meta("key", "value");
 
         // Apply the align formatter
         let result = formatter.transform(info, None).unwrap();

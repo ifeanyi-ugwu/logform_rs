@@ -32,7 +32,7 @@ mod tests {
         // Combine timestamp and simple
         let combined_formatter = combine(vec![timestamp(), simple()]);
 
-        let info = LogInfo::new("info", "Test message").add_meta("key", "value");
+        let info = LogInfo::new("info", "Test message").with_meta("key", "value");
 
         let result = combined_formatter.transform(info, None).unwrap();
         println!("{}", result.message);
