@@ -1,6 +1,6 @@
 [package]
 name = "logform"
-version = "0.1.7"
+version = "0.2.0"
 edition = "2021"
 description = "logform for rust"
 license = "MIT"

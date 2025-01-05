@@ -306,7 +306,7 @@ To use logform in your project, add it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logform = "0.1"
+logform = "0.2"
 ```
 
 or with
