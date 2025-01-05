@@ -32,27 +32,27 @@ impl LogInfo {
         self
     }
 
-    pub fn meta<K: AsRef<str>>(&self, key: K) -> Option<&Value> {
+    pub fn get_meta<K: AsRef<str>>(&self, key: K) -> Option<&Value> {
         self.meta.get(key.as_ref())
     }
 
     pub fn meta_as_str<K: AsRef<str>>(&self, key: K) -> Option<&str> {
-        self.meta(key).and_then(Value::as_str)
+        self.get_meta(key).and_then(Value::as_str)
     }
 
     pub fn meta_as_bool<K: AsRef<str>>(&self, key: K) -> Option<bool> {
-        self.meta(key).and_then(Value::as_bool)
+        self.get_meta(key).and_then(Value::as_bool)
     }
 
     pub fn meta_as_f64<K: AsRef<str>>(&self, key: K) -> Option<f64> {
-        self.meta(key).and_then(Value::as_f64)
+        self.get_meta(key).and_then(Value::as_f64)
     }
 
     pub fn meta_as_object<K: AsRef<str>>(&self, key: K) -> Option<&Map<String, Value>> {
-        self.meta(key).and_then(Value::as_object)
+        self.get_meta(key).and_then(Value::as_object)
     }
 
     pub fn meta_as_array<K: AsRef<str>>(&self, key: K) -> Option<&Vec<Value>> {
-        self.meta(key).and_then(Value::as_array)
+        self.get_meta(key).and_then(Value::as_array)
     }
 }
