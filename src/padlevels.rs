@@ -69,10 +69,12 @@ impl Padder {
 
     // Transform the log info, adding padding
     pub fn transform(
-        &self,
+        &mut self,
         mut info: LogInfo,
-        _opts: &Option<HashMap<String, String>>,
+        opts: &Option<HashMap<String, String>>,
     ) -> Option<LogInfo> {
+        self.update_with_options(opts.clone());
+
         if let Some(padding) = self.paddings.get(&info.level) {
             info.message = format!("{}{}", padding, info.message); // Prepend padding to message
             return Some(info); // Return the transformed info with padding
@@ -81,12 +83,23 @@ impl Padder {
         // If no padding is applied, return the info unchanged (though this case shouldn't occur with default levels)
         Some(info)
     }
+
+    pub fn update_with_options(&mut self, opts: FormatOptions) {
+        if let Some(opts) = opts {
+            if let Some(levels_str) = opts.get("levels") {
+                if let Ok(levels) = serde_json::from_str::<HashMap<String, String>>(levels_str) {
+                    let filler = opts.get("filler").map(|s| s.as_str()).unwrap_or(" ");
+                    self.paddings = Self::padding_for_levels(&levels, filler);
+                }
+            }
+        }
+    }
 }
 
 pub fn padlevels() -> Format {
     let padder = Padder::new(None);
     Format::new(move |info: LogInfo, options: FormatOptions| {
-        //let padder = padder.clone();
+        let mut padder = padder.clone();
         padder.transform(info, &options)
     })
 }
@@ -104,7 +117,7 @@ mod padder_tests {
             ("info".to_string(), "info".to_string()),
             ("error".to_string(), "error".to_string()),
         ]);
-        let padder = Padder::new(Some(HashMap::from([(
+        let mut padder = Padder::new(Some(HashMap::from([(
             "levels".to_string(),
             serde_json::to_string(&levels).unwrap(),
         )])));
@@ -124,7 +137,7 @@ mod padder_tests {
             ("debug".to_string(), "debug".to_string()), // 5 characters
             ("critical".to_string(), "critical".to_string()), // 8 characters
         ]);
-        let padder = Padder::new(Some(HashMap::from([
+        let mut padder = Padder::new(Some(HashMap::from([
             (
                 "levels".to_string(),
                 serde_json::to_string(&levels).unwrap(),
@@ -142,5 +155,37 @@ mod padder_tests {
         assert_eq!(transformed.unwrap().message, "####Test message");
         // The longest level is "critical" (8 chars), so padding for "info" should be 5 "#" (i.e max_length + 1 - current_level_length)
         assert_eq!(transformed_2.unwrap().message, "#####Test message");
+    }
+
+    #[test]
+    fn test_padlevels_function() {
+        // Custom levels with varying lengths
+        let levels = HashMap::from([
+            ("info".to_string(), "info".to_string()),   // 4 characters
+            ("error".to_string(), "error".to_string()), // 5 characters
+            ("critical".to_string(), "critical".to_string()), // 8 characters
+        ]);
+
+        // Create the `padlevels` format with custom levels and filler
+        let formatter = padlevels()
+            .with_option("levels", &serde_json::to_string(&levels).unwrap())
+            .with_option("filler", "-");
+
+        // Log message for "info" level
+        let info = LogInfo::new("info", "Custom filler message");
+        let result_info = formatter.transform(info, None).unwrap();
+
+        // Log message for "error" level
+        let error = LogInfo::new("error", "Error message");
+        let result_error = formatter.transform(error, None).unwrap();
+
+        // Log message for "critical" level
+        let critical = LogInfo::new("critical", "Critical issue");
+        let result_critical = formatter.transform(critical, None).unwrap();
+
+        // Assert that padding is applied correctly
+        assert_eq!(result_info.message, "-----Custom filler message"); // 8 - 4 + 1 = 5 dashes
+        assert_eq!(result_error.message, "----Error message"); // 8 - 5 + 1 = 4 dashes
+        assert_eq!(result_critical.message, "-Critical issue"); // No padding needed, already longest level
     }
 }
