@@ -113,33 +113,31 @@ impl Colorizer {
             self.merge_options(incoming_opts);
         }
 
-        if self
+        let all = self
             .options
             .get("all")
             .map(|v| v == "true")
-            .unwrap_or(false)
-        {
-            info.message = self.colorize(&info.level, &info.message);
-            info.level = self.colorize(&info.level, &info.level);
-            return Some(info);
-        }
-
-        if self
+            .unwrap_or(false);
+        let level = self
             .options
             .get("level")
             .map(|v| v == "true")
-            .unwrap_or(false)
-        {
-            info.level = self.colorize(&info.level, &info.level);
-        }
-
-        if self
+            .unwrap_or(false);
+        let message = self
             .options
             .get("message")
             .map(|v| v == "true")
-            .unwrap_or(false)
-        {
-            info.message = self.colorize(&info.level, &info.message);
+            .unwrap_or(false);
+
+        // Store original level for color lookup
+        let original_level = info.level.clone();
+
+        if all || level || !message {
+            info.level = self.colorize(&original_level, &info.level);
+        }
+
+        if all || message {
+            info.message = self.colorize(&original_level, &info.message);
         }
 
         Some(info)
