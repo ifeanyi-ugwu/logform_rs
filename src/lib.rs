@@ -1,4 +1,5 @@
 mod align;
+mod cli;
 mod colorize;
 mod combine;
 mod format;
@@ -17,6 +18,7 @@ mod uncolorize;
 mod utils;
 
 pub use align::align;
+pub use cli::cli;
 pub use colorize::colorize;
 pub use combine::combine;
 pub use format::{Format, FormatOptions};
