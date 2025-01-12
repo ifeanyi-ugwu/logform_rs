@@ -1,16 +1,48 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::{config, Format, FormatOptions, LogInfo};
 use colored::*;
 use std::collections::HashMap;
 
+#[derive(Clone, Debug)]
+enum MixedColorType {
+    Single(String),
+    Multiple(Vec<String>),
+}
+
+impl MixedColorType {
+    // Helper method to get all colors as a Vec<String>
+    fn as_vec(&self) -> Vec<String> {
+        match self {
+            MixedColorType::Single(color) => vec![color.clone()],
+            MixedColorType::Multiple(colors) => colors.clone(),
+        }
+    }
+}
+
+impl From<String> for MixedColorType {
+    fn from(value: String) -> Self {
+        MixedColorType::Single(value)
+    }
+}
+
+impl From<Vec<String>> for MixedColorType {
+    fn from(values: Vec<String>) -> Self {
+        MixedColorType::Multiple(values)
+    }
+}
+
 #[derive(Clone)]
 pub struct Colorizer {
-    all_colors: HashMap<String, Vec<String>>,
+    all_colors: HashMap<String, MixedColorType>,
     options: HashMap<String, String>,
 }
 
 impl Colorizer {
     pub fn new(opts: Option<HashMap<String, String>>) -> Self {
-        let all_colors = default_colors();
+        let all_colors = config::rust::colors()
+            .into_iter()
+            .map(|(key, value)| (key, value.into()))
+            .collect();
+
         let options = opts.unwrap_or_default();
 
         let mut colorizer = Colorizer {
@@ -30,24 +62,27 @@ impl Colorizer {
 
     pub fn add_colors(&mut self, colors: HashMap<String, serde_json::Value>) {
         for (level, color_val) in colors {
-            let color_list = match color_val {
-                // If it's a single string, wrap it in a Vec
-                serde_json::Value::String(color_str) => vec![color_str],
-                // If it's an array of strings, just use it directly
+            let color_entry: MixedColorType = match color_val {
+                serde_json::Value::String(color_str) => color_str.into(),
                 serde_json::Value::Array(color_arr) => color_arr
                     .into_iter()
                     .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                    .collect(),
-                _ => vec![], // In case of unexpected format
+                    .collect::<Vec<_>>()
+                    .into(),
+                // _ => continue, // Skip unexpected formats
+                _ => {
+                    eprintln!("Unexpected format for color value: {:?}", color_val);
+                    continue;
+                }
             };
-            self.all_colors.insert(level, color_list);
+            self.all_colors.insert(level, color_entry);
         }
     }
 
     pub fn colorize(&self, level: &str, message: &str) -> String {
-        if let Some(color_list) = self.all_colors.get(level) {
+        if let Some(color_entry) = self.all_colors.get(level) {
             let mut colored_message = message.to_string();
-            for color in color_list {
+            for color in color_entry.as_vec() {
                 colored_message = match color.as_str() {
                     // Foreground Colors
                     "black" => colored_message.black().to_string(),
