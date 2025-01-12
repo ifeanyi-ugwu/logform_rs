@@ -96,7 +96,7 @@ impl Padder {
     }
 }
 
-pub fn padlevels() -> Format {
+pub fn pad_levels() -> Format {
     let padder = Padder::new(None);
     Format::new(move |info: LogInfo, options: FormatOptions| {
         let mut padder = padder.clone();
@@ -167,7 +167,7 @@ mod padder_tests {
         ]);
 
         // Create the `padlevels` format with custom levels and filler
-        let formatter = padlevels()
+        let formatter = pad_levels()
             .with_option("levels", &serde_json::to_string(&levels).unwrap())
             .with_option("filler", "-");
 
