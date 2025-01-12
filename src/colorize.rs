@@ -81,59 +81,13 @@ impl Colorizer {
 
     pub fn colorize(&self, level: &str, message: &str) -> String {
         if let Some(color_entry) = self.all_colors.get(level) {
-            let mut colored_message = message.to_string();
-            for color in color_entry.as_vec() {
-                colored_message = match color.as_str() {
-                    // Foreground Colors
-                    "black" => colored_message.black().to_string(),
-                    "red" => colored_message.red().to_string(),
-                    "green" => colored_message.green().to_string(),
-                    "yellow" => colored_message.yellow().to_string(),
-                    "blue" => colored_message.blue().to_string(),
-                    "magenta" => colored_message.magenta().to_string(),
-                    "cyan" => colored_message.cyan().to_string(),
-                    "white" => colored_message.white().to_string(),
-                    // Bright Foreground Colors
-                    "bright_black" => colored_message.bright_black().to_string(),
-                    "bright_red" => colored_message.bright_red().to_string(),
-                    "bright_green" => colored_message.bright_green().to_string(),
-                    "bright_yellow" => colored_message.bright_yellow().to_string(),
-                    "bright_blue" => colored_message.bright_blue().to_string(),
-                    "bright_magenta" => colored_message.bright_magenta().to_string(),
-                    "bright_cyan" => colored_message.bright_cyan().to_string(),
-                    "bright_white" => colored_message.bright_white().to_string(),
-                    // Background Colors
-                    "on_black" => colored_message.on_black().to_string(),
-                    "on_red" => colored_message.on_red().to_string(),
-                    "on_green" => colored_message.on_green().to_string(),
-                    "on_yellow" => colored_message.on_yellow().to_string(),
-                    "on_blue" => colored_message.on_blue().to_string(),
-                    "on_magenta" => colored_message.on_magenta().to_string(),
-                    "on_cyan" => colored_message.on_cyan().to_string(),
-                    "on_white" => colored_message.on_white().to_string(),
-                    // Bright Background Colors
-                    "on_bright_black" => colored_message.on_bright_black().to_string(),
-                    "on_bright_red" => colored_message.on_bright_red().to_string(),
-                    "on_bright_green" => colored_message.on_bright_green().to_string(),
-                    "on_bright_yellow" => colored_message.on_bright_yellow().to_string(),
-                    "on_bright_blue" => colored_message.on_bright_blue().to_string(),
-                    "on_bright_magenta" => colored_message.on_bright_magenta().to_string(),
-                    "on_bright_cyan" => colored_message.on_bright_cyan().to_string(),
-                    "on_bright_white" => colored_message.on_bright_white().to_string(),
-                    // Styles
-                    "bold" => colored_message.bold().to_string(),
-                    "underline" => colored_message.underline().to_string(),
-                    "italic" => colored_message.italic().to_string(),
-                    "dimmed" => colored_message.dimmed().to_string(),
-                    "reversed" => colored_message.reversed().to_string(),
-                    "blink" => colored_message.blink().to_string(),
-                    "hidden" => colored_message.hidden().to_string(),
-                    "strikethrough" => colored_message.strikethrough().to_string(),
-                    // Default case
-                    _ => colored_message,
-                };
-            }
-            colored_message
+            // Start with the original message
+            color_entry
+                .as_vec()
+                .iter()
+                .fold(message.to_string(), |colored_message, color| {
+                    apply_color(&colored_message, color)
+                })
         } else {
             message.to_string()
         }
@@ -188,14 +142,56 @@ impl Colorizer {
     }
 }
 
-fn default_colors() -> HashMap<String, Vec<String>> {
-    let mut defaults = HashMap::new();
-    defaults.insert("error".to_string(), vec!["red".to_string()]);
-    defaults.insert("warn".to_string(), vec!["yellow".to_string()]);
-    defaults.insert("info".to_string(), vec!["green".to_string()]);
-    defaults.insert("debug".to_string(), vec!["blue".to_string()]);
-    defaults.insert("trace".to_string(), vec!["magenta".to_string()]);
-    defaults
+fn apply_color(message: &str, color: &str) -> String {
+    match color {
+        // Foreground Colors
+        "black" => message.black().to_string(),
+        "red" => message.red().to_string(),
+        "green" => message.green().to_string(),
+        "yellow" => message.yellow().to_string(),
+        "blue" => message.blue().to_string(),
+        "magenta" => message.magenta().to_string(),
+        "cyan" => message.cyan().to_string(),
+        "white" => message.white().to_string(),
+        // Bright Foreground Colors
+        "bright_black" => message.bright_black().to_string(),
+        "bright_red" => message.bright_red().to_string(),
+        "bright_green" => message.bright_green().to_string(),
+        "bright_yellow" => message.bright_yellow().to_string(),
+        "bright_blue" => message.bright_blue().to_string(),
+        "bright_magenta" => message.bright_magenta().to_string(),
+        "bright_cyan" => message.bright_cyan().to_string(),
+        "bright_white" => message.bright_white().to_string(),
+        // Background Colors
+        "on_black" => message.on_black().to_string(),
+        "on_red" => message.on_red().to_string(),
+        "on_green" => message.on_green().to_string(),
+        "on_yellow" => message.on_yellow().to_string(),
+        "on_blue" => message.on_blue().to_string(),
+        "on_magenta" => message.on_magenta().to_string(),
+        "on_cyan" => message.on_cyan().to_string(),
+        "on_white" => message.on_white().to_string(),
+        // Bright Background Colors
+        "on_bright_black" => message.on_bright_black().to_string(),
+        "on_bright_red" => message.on_bright_red().to_string(),
+        "on_bright_green" => message.on_bright_green().to_string(),
+        "on_bright_yellow" => message.on_bright_yellow().to_string(),
+        "on_bright_blue" => message.on_bright_blue().to_string(),
+        "on_bright_magenta" => message.on_bright_magenta().to_string(),
+        "on_bright_cyan" => message.on_bright_cyan().to_string(),
+        "on_bright_white" => message.on_bright_white().to_string(),
+        // Styles
+        "bold" => message.bold().to_string(),
+        "underline" => message.underline().to_string(),
+        "italic" => message.italic().to_string(),
+        "dimmed" => message.dimmed().to_string(),
+        "reversed" => message.reversed().to_string(),
+        "blink" => message.blink().to_string(),
+        "hidden" => message.hidden().to_string(),
+        "strikethrough" => message.strikethrough().to_string(),
+        // Default case
+        _ => message.to_string(),
+    }
 }
 
 pub fn colorize() -> Format {
