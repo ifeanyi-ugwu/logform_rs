@@ -81,13 +81,12 @@ impl Colorizer {
 
     pub fn colorize(&self, level: &str, message: &str) -> String {
         if let Some(color_entry) = self.all_colors.get(level) {
-            // Start with the original message
-            color_entry
+            // Start with the original message as a ColoredString
+            let colored_message = color_entry
                 .as_vec()
                 .iter()
-                .fold(message.to_string(), |colored_message, color| {
-                    apply_color(&colored_message, color)
-                })
+                .fold(message.normal(), |msg, color| apply_color(msg, color));
+            colored_message.to_string() // Convert to String at the end
         } else {
             message.to_string()
         }
@@ -142,55 +141,59 @@ impl Colorizer {
     }
 }
 
-fn apply_color(message: &str, color: &str) -> String {
+fn apply_color<'a>(
+    message: impl Into<colored::ColoredString>,
+    color: &str,
+) -> colored::ColoredString {
+    let message = message.into();
     match color {
         // Foreground Colors
-        "black" => message.black().to_string(),
-        "red" => message.red().to_string(),
-        "green" => message.green().to_string(),
-        "yellow" => message.yellow().to_string(),
-        "blue" => message.blue().to_string(),
-        "magenta" => message.magenta().to_string(),
-        "cyan" => message.cyan().to_string(),
-        "white" => message.white().to_string(),
+        "black" => message.black(),
+        "red" => message.red(),
+        "green" => message.green(),
+        "yellow" => message.yellow(),
+        "blue" => message.blue(),
+        "magenta" => message.magenta(),
+        "cyan" => message.cyan(),
+        "white" => message.white(),
         // Bright Foreground Colors
-        "bright_black" => message.bright_black().to_string(),
-        "bright_red" => message.bright_red().to_string(),
-        "bright_green" => message.bright_green().to_string(),
-        "bright_yellow" => message.bright_yellow().to_string(),
-        "bright_blue" => message.bright_blue().to_string(),
-        "bright_magenta" => message.bright_magenta().to_string(),
-        "bright_cyan" => message.bright_cyan().to_string(),
-        "bright_white" => message.bright_white().to_string(),
+        "bright_black" => message.bright_black(),
+        "bright_red" => message.bright_red(),
+        "bright_green" => message.bright_green(),
+        "bright_yellow" => message.bright_yellow(),
+        "bright_blue" => message.bright_blue(),
+        "bright_magenta" => message.bright_magenta(),
+        "bright_cyan" => message.bright_cyan(),
+        "bright_white" => message.bright_white(),
         // Background Colors
-        "on_black" => message.on_black().to_string(),
-        "on_red" => message.on_red().to_string(),
-        "on_green" => message.on_green().to_string(),
-        "on_yellow" => message.on_yellow().to_string(),
-        "on_blue" => message.on_blue().to_string(),
-        "on_magenta" => message.on_magenta().to_string(),
-        "on_cyan" => message.on_cyan().to_string(),
-        "on_white" => message.on_white().to_string(),
+        "on_black" => message.on_black(),
+        "on_red" => message.on_red(),
+        "on_green" => message.on_green(),
+        "on_yellow" => message.on_yellow(),
+        "on_blue" => message.on_blue(),
+        "on_magenta" => message.on_magenta(),
+        "on_cyan" => message.on_cyan(),
+        "on_white" => message.on_white(),
         // Bright Background Colors
-        "on_bright_black" => message.on_bright_black().to_string(),
-        "on_bright_red" => message.on_bright_red().to_string(),
-        "on_bright_green" => message.on_bright_green().to_string(),
-        "on_bright_yellow" => message.on_bright_yellow().to_string(),
-        "on_bright_blue" => message.on_bright_blue().to_string(),
-        "on_bright_magenta" => message.on_bright_magenta().to_string(),
-        "on_bright_cyan" => message.on_bright_cyan().to_string(),
-        "on_bright_white" => message.on_bright_white().to_string(),
+        "on_bright_black" => message.on_bright_black(),
+        "on_bright_red" => message.on_bright_red(),
+        "on_bright_green" => message.on_bright_green(),
+        "on_bright_yellow" => message.on_bright_yellow(),
+        "on_bright_blue" => message.on_bright_blue(),
+        "on_bright_magenta" => message.on_bright_magenta(),
+        "on_bright_cyan" => message.on_bright_cyan(),
+        "on_bright_white" => message.on_bright_white(),
         // Styles
-        "bold" => message.bold().to_string(),
-        "underline" => message.underline().to_string(),
-        "italic" => message.italic().to_string(),
-        "dimmed" => message.dimmed().to_string(),
-        "reversed" => message.reversed().to_string(),
-        "blink" => message.blink().to_string(),
-        "hidden" => message.hidden().to_string(),
-        "strikethrough" => message.strikethrough().to_string(),
+        "bold" => message.bold(),
+        "underline" => message.underline(),
+        "italic" => message.italic(),
+        "dimmed" => message.dimmed(),
+        "reversed" => message.reversed(),
+        "blink" => message.blink(),
+        "hidden" => message.hidden(),
+        "strikethrough" => message.strikethrough(),
         // Default case
-        _ => message.to_string(),
+        _ => message,
     }
 }
 
