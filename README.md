@@ -33,9 +33,14 @@ pub fn initialize_and_test_formats() {
   - [Filtering `LogInfo` Objects](#filtering-loginfo-objects)
 - [Formats](#formats)
   - [Align](#align)
+  - [CLI](#cli)
   - [Colorize](#colorize)
   - [Combine](#combine)
   - [JSON](#json)
+  - [Label](#label)
+  - [Logstash](#logstash)
+  - [Metadata](#metadata)
+  - [PadLevels](#padlevels)
   - [PrettyPrint](#prettyprint)
   - [Printf](#printf)
   - [Simple](#simple)
@@ -218,6 +223,26 @@ The `align` format adds a tab character before the message.
 let aligned_format = align();
 ```
 
+### CLI
+
+The `cli` format is a combination of the `colorize` and `pad_levels` formats and accepts both of their options. It pads, colorize, and then formats the log message as `level:message`.
+
+```rust
+use std::collections::HashMap;
+use crate::{Format, LogInfo, cli};
+
+let cli_format = cli()
+    .with_option("colors", &serde_json::to_string(&HashMap::from([("info", "blue")])).unwrap())
+    .with_option("filler", "*")
+    .with_option("all", "true");
+
+let info = LogInfo::new("info", "my message");
+let transformed_info = cli_format.transform(info, None);
+
+println!("{:?}", transformed_info);
+// Output: LogInfo { level: "\x1b[34minfo\x1b[39m", message: "\x1b[34m**my message\x1b[39m", meta: {} }
+```
+
 ### Colorize
 
 The `colorize` format adds colors to log levels and messages.
@@ -246,6 +271,114 @@ The `json` format converts the log info into a JSON string.
 
 ```rust
 let json_format = json();
+```
+
+### Label
+
+The `label` format adds a specified label to the log message or metadata. It accepts the following options:
+
+- **label**: The label to prepend to the message or store in the metadata.
+- **message** (optional): Determines where the label is added.
+  - **true** (default): Adds the label before the message.
+  - **false**: Adds the label to the `meta` field instead of the message.
+
+```rust
+use std::collections::HashMap;
+use crate::{Format, LogInfo, label};
+
+let label_format = label();
+let info = LogInfo::new("info", "Test message");
+
+let mut opts = HashMap::new();
+opts.insert("label".to_string(), "MY_LABEL".to_string());
+opts.insert("message".to_string(), "true".to_string());
+
+let result = label_format.transform(info, Some(opts)).unwrap();
+println!("{:?}", result);
+// Output: LogInfo { level: "info", message: "[MY_LABEL] Test message", meta: {} }
+
+opts.insert("message".to_string(), "false".to_string());
+let result_meta = label_format.transform(info, Some(opts)).unwrap();
+println!("{:?}", result_meta);
+// Output: LogInfo { level: "info", message: "Test message", meta: {"label": "MY_LABEL"} }
+```
+
+### Logstash
+
+The `logstash` format converts the log info into a Logstash-compatible JSON string.
+
+```rust
+use logform::{ combine, logstash, timestamp };
+
+let logstash_format = combine(vec![timestamp(), logstash()]);
+
+let mut info = LogInfo::new("info", "my message");
+
+let formatted_info = logstash_format.transform(info, None).unwrap();
+
+println!("{}", formatted_info.message);
+// {"@message":"my message","@timestamp":"2025-01-12T13:10:05.202213+00:00","@fields":{"level":"info"}}
+```
+
+### Metadata
+
+The `metadata` format collects metadata from the log and adds it to the specified key. It defaults to using the key `"metadata"`, and includes **all** the keys in `info.meta` unless exclusions are specified.
+
+It accepts the following options:
+
+- **key** (optional): Name of the key used for the metadata. Default is `"metadata"`.
+- **fillExcept** (optional): Comma-separated list of keys to exclude from the metadata object.
+- **fillWith** (optional): Comma-separated list of keys to include in the metadata object.
+
+By default, **all keys** in `info.meta` are collected into the metadata, except those specified in `fillExcept`.
+
+```rust
+use logform::{metadata, LogInfo};
+use serde_json::json;
+use std::collections::HashMap;
+
+let metadata_format = metadata();
+
+let mut info = LogInfo::new("info", "Test message");
+info.meta.insert("key1".to_string(), "value1".into());
+info.meta.insert("key2".to_string(), "value2".into());
+
+// Example 1: Default behavior (no options given)
+let result = metadata_format.transform(info.clone(), None).unwrap();
+println!("{:?}", result);
+// Output: LogInfo { level: "info", message: "Test message", meta: {"metadata": Object {"key1": String("value1"), "key2": String("value2")}} }
+
+
+// Example 2: Only include `key1` in metadata
+let mut opts = HashMap::new();
+opts.insert("fillWith".to_string(), "key1".to_string());
+let result = metadata_format.transform(info.clone(), Some(opts)).unwrap();
+println!("{:?}", result);
+// Output: LogInfo { level: "info", message: "Test message", meta: {"key2": String("value2"), "metadata": Object {"key1": String("value1")}} }
+
+// Example 3: Exclude only `key1` from metadata
+let mut opts = HashMap::new();
+opts.insert("fillExcept".to_string(), "key1".to_string());
+let result = metadata_format.transform(info, Some(opts)).unwrap();
+println!("{:?}", result.meta);
+// Output: LogInfo { level: "info", message: "Test message", meta: {"metadata": Object {"key2": String("value2")}, "key1": String("value1")} }
+```
+
+### PadLevels
+
+The `pad_levels` format pads levels to be the same length.
+
+```rust
+use std::collections::HashMap;
+use crate::{Format, LogInfo, pad_levels};
+
+let pad_levels_format = pad_levels();
+
+let info = LogInfo::new("info", "my message");
+let transformed_info = pad_levels_format.transform(info, None);
+
+println!("{:?}", transformed_info);
+// Output: LogInfo { level: "info", message: "  my message", meta: {} }
 ```
 
 ### Ms
