@@ -2,6 +2,7 @@ mod align;
 mod cli;
 mod colorize;
 mod combine;
+pub mod config;
 mod format;
 mod json;
 mod label;
