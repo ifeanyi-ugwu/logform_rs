@@ -15,7 +15,7 @@ impl CliFormat {
         if !opts.contains_key("levels") {
             opts.insert(
                 "levels".to_string(),
-                serde_json::to_string(&default_levels()).unwrap(),
+                serde_json::to_string(&config::cli::levels()).unwrap(),
             );
         }
 
@@ -41,22 +41,6 @@ impl CliFormat {
                 info
             })
     }
-}
-
-fn default_levels() -> HashMap<String, usize> {
-    let levels = HashMap::from([
-        ("error".to_string(), 0),
-        ("warn".to_string(), 1),
-        ("help".to_string(), 2),
-        ("data".to_string(), 3),
-        ("info".to_string(), 4),
-        ("debug".to_string(), 5),
-        ("prompt".to_string(), 6),
-        ("verbose".to_string(), 7),
-        ("input".to_string(), 8),
-        ("silly".to_string(), 9),
-    ]);
-    levels
 }
 
 pub fn cli() -> Format {
