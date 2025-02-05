@@ -32,3 +32,20 @@ impl LogInfo {
         self
     }
 }
+
+#[macro_export]
+macro_rules! log_info {
+    // Without metadata
+    ($level:ident, $msg:expr) => {{
+        $crate::LogInfo::new(stringify!($level), $msg)
+    }};
+
+    // With metadata
+    ($level:ident, $msg:expr, $($key:ident = $value:expr),*) => {{
+        let mut log_entry = $crate::LogInfo::new(stringify!($level), $msg);
+        $(
+            log_entry = log_entry.with_meta(stringify!($key), $value);
+        )*
+        log_entry
+    }};
+}
