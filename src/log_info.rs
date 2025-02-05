@@ -31,28 +31,4 @@ impl LogInfo {
         self.meta.remove(&key.into());
         self
     }
-
-    pub fn get_meta<K: AsRef<str>>(&self, key: K) -> Option<&Value> {
-        self.meta.get(key.as_ref())
-    }
-
-    pub fn meta_as_str<K: AsRef<str>>(&self, key: K) -> Option<&str> {
-        self.get_meta(key).and_then(Value::as_str)
-    }
-
-    pub fn meta_as_bool<K: AsRef<str>>(&self, key: K) -> Option<bool> {
-        self.get_meta(key).and_then(Value::as_bool)
-    }
-
-    pub fn meta_as_f64<K: AsRef<str>>(&self, key: K) -> Option<f64> {
-        self.get_meta(key).and_then(Value::as_f64)
-    }
-
-    pub fn meta_as_object<K: AsRef<str>>(&self, key: K) -> Option<&Map<String, Value>> {
-        self.get_meta(key).and_then(Value::as_object)
-    }
-
-    pub fn meta_as_array<K: AsRef<str>>(&self, key: K) -> Option<&Vec<Value>> {
-        self.get_meta(key).and_then(Value::as_array)
-    }
 }
