@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde_json::{Map, Value};
+use serde_json::Value;
 
 #[derive(Debug, Clone)]
 pub struct LogInfo {
