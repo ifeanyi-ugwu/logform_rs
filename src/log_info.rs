@@ -1,8 +1,11 @@
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct LogInfo {
     pub level: String,
     pub message: String,
