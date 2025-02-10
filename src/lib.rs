@@ -10,6 +10,7 @@ mod log_info;
 mod logstash;
 mod metadata;
 mod ms;
+mod new;
 mod pad_levels;
 mod pretty_print;
 mod printf;
