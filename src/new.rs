@@ -2,6 +2,7 @@ pub mod align;
 pub mod json;
 pub mod label;
 pub mod logstash;
+pub mod ms;
 pub mod simple;
 pub mod timestamp;
 
