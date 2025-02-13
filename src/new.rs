@@ -9,6 +9,7 @@ pub mod pretty_print;
 pub mod printf;
 pub mod simple;
 pub mod timestamp;
+pub mod uncolorize;
 
 pub enum TransformError {
     TransformationFailed,
