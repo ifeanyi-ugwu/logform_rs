@@ -4,6 +4,7 @@ pub mod label;
 pub mod logstash;
 pub mod metadata;
 pub mod ms;
+pub mod pretty_print;
 pub mod simple;
 pub mod timestamp;
 
