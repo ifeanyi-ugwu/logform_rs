@@ -1,4 +1,5 @@
 pub mod align;
+pub mod colorize;
 pub mod json;
 pub mod label;
 pub mod logstash;
