@@ -3,21 +3,33 @@ use crate::LogInfo;
 use chrono::{DateTime, Utc};
 use serde_json::json;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Timestamp {
     format: Option<String>,
     alias: Option<String>,
 }
 
 impl Timestamp {
-    pub fn new(format: Option<String>, alias: Option<String>) -> Self {
-        Timestamp { format, alias }
+    pub fn new() -> Self {
+        Self {
+            format: None,
+            alias: None,
+        }
+    }
+
+    pub fn with_format(mut self, format: &str) -> Self {
+        self.format = Some(format.to_string());
+        self
+    }
+
+    pub fn with_alias(mut self, alias: &str) -> Self {
+        self.alias = Some(alias.to_string());
+        self
     }
 
     pub fn transform(&self, mut info: LogInfo) -> Option<LogInfo> {
         let timestamp = if let Some(fmt) = &self.format {
-            let now: DateTime<Utc> = Utc::now();
-            now.format(fmt).to_string()
+            Utc::now().format(fmt).to_string()
         } else {
             Utc::now().to_rfc3339()
         };
@@ -44,8 +56,8 @@ impl Format for Timestamp {
     }
 }
 
-pub fn timestamp(format: Option<String>, alias: Option<String>) -> Timestamp {
-    Timestamp::new(format, alias)
+pub fn timestamp() -> Timestamp {
+    Timestamp::new()
 }
 
 #[cfg(test)]
@@ -55,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_default_timestamp() {
-        let formatter = timestamp(None, None);
+        let formatter = timestamp();
         let info = LogInfo::new("info", "Test message");
         let result = formatter.transform(info).unwrap();
 
@@ -70,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_custom_format() {
-        let formatter = timestamp(Some("%d/%m/%Y %H:%M:%S".to_string()), None);
+        let formatter = timestamp().with_format("%d/%m/%Y %H:%M:%S");
         let info = LogInfo::new("info", "Test message");
         let result = formatter.transform(info).unwrap();
 
@@ -82,7 +94,7 @@ mod tests {
 
     #[test]
     fn test_alias() {
-        let formatter = timestamp(None, Some("log_time".to_string()));
+        let formatter = timestamp().with_alias("log_time");
         let info = LogInfo::new("info", "Test message");
         let result = formatter.transform(info).unwrap();
 
@@ -93,10 +105,9 @@ mod tests {
 
     #[test]
     fn test_custom_format_with_alias() {
-        let formatter = timestamp(
-            Some("%d/%m/%Y %H:%M:%S".to_string()),
-            Some("log_time".to_string()),
-        );
+        let formatter = timestamp()
+            .with_format("%d/%m/%Y %H:%M:%S")
+            .with_alias("log_time");
         let info = LogInfo::new("info", "Test message");
         let result = formatter.transform(info).unwrap();
 

@@ -28,6 +28,10 @@ impl Format for JsonFormat {
     }
 }
 
+pub fn json() -> JsonFormat {
+    JsonFormat
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;
