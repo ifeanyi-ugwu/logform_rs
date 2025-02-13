@@ -40,7 +40,7 @@ fn old_timestamp_format_benchmark(c: &mut Criterion) {
 }
 
 fn new_timestamp_format_benchmark(c: &mut Criterion) {
-    let formatter = logform::new::timestamp::Timestamp::new(None, None); // New timestamp formatter
+    let formatter = logform::new::timestamp::Timestamp::new(); // New timestamp formatter
     let info = LogInfo::new("info", "Benchmarking new timestamp");
 
     c.bench_function("New Timestamp Format", |b| {
