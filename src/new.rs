@@ -1,4 +1,5 @@
 pub mod align;
+pub mod cli;
 pub mod colorize;
 pub mod json;
 pub mod label;
