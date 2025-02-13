@@ -5,6 +5,7 @@ pub mod label;
 pub mod logstash;
 pub mod metadata;
 pub mod ms;
+pub mod pad_levels;
 pub mod pretty_print;
 pub mod printf;
 pub mod simple;
