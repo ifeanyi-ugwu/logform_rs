@@ -1,3 +1,4 @@
+pub mod align;
 pub mod json;
 pub mod timestamp;
 
