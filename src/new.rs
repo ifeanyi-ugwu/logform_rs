@@ -12,6 +12,8 @@ pub mod printf;
 pub mod simple;
 pub mod timestamp;
 pub mod uncolorize;
+/* chaining of formats can be achieved by the `.chain` method on the `Format`
+instance hence the `combine` format is not needed  */
 
 pub enum TransformError {
     TransformationFailed,
