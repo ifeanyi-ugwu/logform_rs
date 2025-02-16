@@ -18,7 +18,6 @@ impl CliFormat {
     }
 
     pub fn with_levels(mut self, levels: impl IntoIterator<Item = impl Into<String>>) -> Self {
-        let levels: HashSet<String> = levels.into_iter().map(Into::into).collect();
         self.padder = self.padder.with_levels(levels);
         self
     }
