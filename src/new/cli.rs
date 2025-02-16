@@ -11,7 +11,7 @@ pub struct CliFormat {
 impl CliFormat {
     pub fn new() -> Self {
         let levels: HashSet<String> = config::cli::levels().into_keys().collect();
-        let padder = Padder::new().with_levels(levels.clone());
+        let padder = Padder::new().with_levels(levels);
         let colorizer = Colorizer::new();
 
         CliFormat { colorizer, padder }
