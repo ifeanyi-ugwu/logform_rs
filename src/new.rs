@@ -77,8 +77,9 @@ where
     type Input = T;
 
     fn try_transform(&self, input: T) -> Result<T, TransformError> {
-        let intermediate = self.first.try_transform(input)?;
-        self.next.try_transform(intermediate)
+        self.first
+            .try_transform(input)
+            .and_then(|res| self.next.try_transform(res))
     }
 
     fn transform(&self, input: T) -> Option<T> {
