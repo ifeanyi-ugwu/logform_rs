@@ -18,7 +18,6 @@ instance hence the `combine` format is not needed  */
 #[derive(Debug)]
 pub enum TransformError {
     TransformationFailed,
-    ChainInterrupted,
 }
 
 pub trait Format {
@@ -78,14 +77,8 @@ where
     type Input = T;
 
     fn try_transform(&self, input: T) -> Result<T, TransformError> {
-        let intermediate = self
-            .first
-            .try_transform(input)
-            .map_err(|_e| TransformError::ChainInterrupted)?;
-
-        self.next
-            .try_transform(intermediate)
-            .map_err(|_e| TransformError::ChainInterrupted)
+        let intermediate = self.first.try_transform(input)?;
+        self.next.try_transform(intermediate)
     }
 
     fn transform(&self, input: T) -> Option<T> {
