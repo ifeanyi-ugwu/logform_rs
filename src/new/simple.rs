@@ -1,4 +1,4 @@
-use super::{Format, TransformError};
+use super::Format;
 use crate::LogInfo;
 
 pub struct SimpleFormat;
@@ -6,7 +6,7 @@ pub struct SimpleFormat;
 impl Format for SimpleFormat {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
         let padding = info
             .meta
             .get("padding")
@@ -27,7 +27,7 @@ impl Format for SimpleFormat {
             message.push_str(&format!(" {}", rest_string));
         }
 
-        Ok(LogInfo {
+        Some(LogInfo {
             level: info.level,
             message,
             meta: info.meta,

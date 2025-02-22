@@ -1,4 +1,4 @@
-use super::{Format, TransformError};
+use super::Format;
 use crate::LogInfo;
 use regex::Regex;
 
@@ -45,9 +45,8 @@ fn strip_colors(input: &str) -> String {
 impl Format for Uncolorize {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
         self.transform(info)
-            .ok_or(TransformError::TransformationFailed)
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::LogInfo;
 use std::sync::Arc;
 
-use super::{Format, TransformError};
+use super::Format;
 
 #[derive(Clone)]
 pub struct Printf {
@@ -19,9 +19,9 @@ impl Printf {
 impl Format for Printf {
     type Input = LogInfo;
 
-    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, mut info: LogInfo) -> Option<Self::Input> {
         info.message = (self.template)(&info);
-        Ok(info)
+        Some(info)
     }
 }
 
@@ -49,7 +49,7 @@ mod tests {
 
         let info = LogInfo::new("info", "This is a message").with_meta("key", "value");
 
-        let result = formatter.try_transform(info).unwrap();
+        let result = formatter.transform(info).unwrap();
         println!("{}", result.message); // Check the formatted output
     }
 }

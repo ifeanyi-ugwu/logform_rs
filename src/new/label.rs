@@ -1,4 +1,4 @@
-use super::{Format, TransformError};
+use super::Format;
 use crate::LogInfo;
 use serde_json::json;
 
@@ -29,14 +29,14 @@ impl LabelFormat {
 impl Format for LabelFormat {
     type Input = LogInfo;
 
-    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, mut info: LogInfo) -> Option<Self::Input> {
         if self.message {
             info.message = format!("[{}] {}", self.label, info.message);
         } else {
             info.meta
                 .insert("label".to_string(), json!(self.label.clone()));
         }
-        Ok(info)
+        Some(info)
     }
 }
 

@@ -1,12 +1,12 @@
-use super::{Format, TransformError};
+use super::Format;
 
 pub struct AlignFormat;
 
 impl Format for AlignFormat {
     type Input = String;
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
-        Ok(format!("\t{}", input))
+    fn transform(&self, input: String) -> Option<Self::Input> {
+        Some(format!("\t{}", input))
     }
 }
 

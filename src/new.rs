@@ -15,19 +15,10 @@ pub mod uncolorize;
 /* chaining of formats can be achieved by the `.chain` method on the `Format`
 instance hence the `combine` format is not needed  */
 
-#[derive(Debug)]
-pub enum TransformError {
-    TransformationFailed,
-}
-
 pub trait Format {
     type Input;
 
-    fn try_transform(&self, input: Self::Input) -> Result<Self::Input, TransformError>;
-
-    fn transform(&self, input: Self::Input) -> Option<Self::Input> {
-        self.try_transform(input).ok()
-    }
+    fn transform(&self, input: Self::Input) -> Option<Self::Input>;
 
     /*fn try_chain<F>(self, next: F) -> impl Fn(Self::Input) -> Result<Self::Input, TransformError>
     where
@@ -76,12 +67,6 @@ where
 {
     type Input = T;
 
-    fn try_transform(&self, input: T) -> Result<T, TransformError> {
-        self.first
-            .try_transform(input)
-            .and_then(|res| self.next.try_transform(res))
-    }
-
     fn transform(&self, input: T) -> Option<T> {
         self.first
             .transform(input)
@@ -94,11 +79,11 @@ struct UpperCase;
 impl Format for UpperCase {
     type Input = String;
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
+    fn transform(&self, input: String) -> Option<Self::Input> {
         if input.is_empty() {
-            Err(TransformError::TransformationFailed)
+            None
         } else {
-            Ok(input.to_uppercase())
+            Some(input.to_uppercase())
         }
     }
 }
@@ -107,8 +92,8 @@ pub struct ReverseFormat;
 impl Format for ReverseFormat {
     type Input = String;
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
-        Ok(input.chars().rev().collect())
+    fn transform(&self, input: String) -> Option<Self::Input> {
+        Some(input.chars().rev().collect())
     }
 }
 
@@ -116,8 +101,8 @@ struct AddSuffix(String);
 impl Format for AddSuffix {
     type Input = String;
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
-        Ok(format!("{}{}", input, self.0))
+    fn transform(&self, input: String) -> Option<Self::Input> {
+        Some(format!("{}{}", input, self.0))
     }
 }
 

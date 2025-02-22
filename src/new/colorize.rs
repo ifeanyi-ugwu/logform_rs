@@ -1,4 +1,4 @@
-use super::{Format, TransformError};
+use super::Format;
 use crate::{config, LogInfo};
 use colored::*;
 use std::{collections::HashMap, sync::Once};
@@ -139,9 +139,8 @@ impl Colorizer {
 impl Format for Colorizer {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
         self.transform(info)
-            .ok_or(TransformError::TransformationFailed)
     }
 }
 

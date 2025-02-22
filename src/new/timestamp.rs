@@ -1,4 +1,4 @@
-use super::{Format, TransformError};
+use super::Format;
 use crate::LogInfo;
 use chrono::{DateTime, Utc};
 use serde_json::json;
@@ -50,9 +50,8 @@ impl Timestamp {
 impl Format for Timestamp {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
         self.transform(info)
-            .ok_or(TransformError::TransformationFailed)
     }
 }
 

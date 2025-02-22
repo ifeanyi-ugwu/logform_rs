@@ -1,4 +1,4 @@
-use super::{colorize::Colorizer, pad_levels::Padder, Format, TransformError};
+use super::{colorize::Colorizer, pad_levels::Padder, Format};
 use crate::{config, LogInfo};
 use std::collections::HashSet;
 
@@ -69,9 +69,8 @@ impl CliFormat {
 impl Format for CliFormat {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
         self.transform(info)
-            .ok_or(TransformError::TransformationFailed)
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::{utils::format_json::format_json, LogInfo};
 use serde_json::{Map, Value};
 
-use super::{Format, TransformError};
+use super::Format;
 
 #[derive(Clone)]
 pub struct PrettyPrinter {
@@ -46,8 +46,8 @@ impl PrettyPrinter {
 impl Format for PrettyPrinter {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
-        Ok(self.format_log(&info))
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
+        Some(self.format_log(&info))
     }
 }
 
@@ -75,7 +75,7 @@ mod tests {
         .with_meta("empty object", json!({}))
         .with_meta("empty array", json!([]));
 
-        let result = formatter.try_transform(info).unwrap();
+        let result = formatter.transform(info).unwrap();
 
         // Check for overall structure
         let message = &result.message;
@@ -155,7 +155,7 @@ mod tests {
             .with_meta("bool_value", true)
             .with_meta("null_value", Value::Null);
 
-        let result = formatter.try_transform(info).unwrap();
+        let result = formatter.transform(info).unwrap();
         let message = &result.message;
 
         let re_info = Regex::new(r"level: '\x1b\[32minfo\x1b\[0m'").unwrap();

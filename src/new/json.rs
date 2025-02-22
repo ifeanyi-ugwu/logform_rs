@@ -1,4 +1,4 @@
-use super::{Format, TransformError};
+use super::Format;
 use crate::LogInfo;
 use serde_json::{Map, Value};
 
@@ -7,7 +7,7 @@ pub struct JsonFormat;
 impl Format for JsonFormat {
     type Input = LogInfo;
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
         let mut log_object = Map::new();
 
         log_object.insert("level".to_string(), Value::String(info.level.clone()));
@@ -19,7 +19,7 @@ impl Format for JsonFormat {
 
         let json_message = Value::Object(log_object).to_string();
 
-        Ok(LogInfo {
+        Some(LogInfo {
             level: info.level,
             message: json_message,
             meta: info.meta,
