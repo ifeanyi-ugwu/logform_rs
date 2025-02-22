@@ -1,13 +1,12 @@
-use super::Format;
+use super::{Format, TransformError};
 use crate::LogInfo;
 
 pub struct SimpleFormat;
 
 impl Format for SimpleFormat {
     type Input = LogInfo;
-    type Error = (); // No real errors, so we use an empty tuple
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
         let padding = info
             .meta
             .get("padding")

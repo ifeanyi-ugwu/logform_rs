@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::time::Instant;
 
-use super::Format;
+use super::{Format, TransformError};
 
 lazy_static! {
     static ref PREV_TIME: Mutex<Instant> = Mutex::new(Instant::now());
@@ -13,9 +13,8 @@ pub struct MsFormat;
 
 impl Format for MsFormat {
     type Input = LogInfo;
-    type Error = (); // No actual error handling needed
 
-    fn try_transform(&self, mut input: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, mut input: LogInfo) -> Result<Self::Input, TransformError> {
         let curr = Instant::now();
         let mut prev_time = PREV_TIME.lock().unwrap();
         let diff = curr.duration_since(*prev_time);

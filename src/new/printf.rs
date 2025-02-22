@@ -1,7 +1,7 @@
 use crate::LogInfo;
 use std::sync::Arc;
 
-use super::Format;
+use super::{Format, TransformError};
 
 #[derive(Clone)]
 pub struct Printf {
@@ -18,9 +18,8 @@ impl Printf {
 
 impl Format for Printf {
     type Input = LogInfo;
-    type Error = (); // No actual error handling needed
 
-    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, TransformError> {
         info.message = (self.template)(&info);
         Ok(info)
     }

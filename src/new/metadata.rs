@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use super::Format;
+use super::TransformError;
 
 pub struct MetadataFormat {
     key: String,
@@ -38,9 +39,8 @@ impl MetadataFormat {
 
 impl Format for MetadataFormat {
     type Input = LogInfo;
-    type Error = ();
 
-    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, TransformError> {
         let mut metadata = HashMap::new();
 
         if !self.fill_with.is_empty() {

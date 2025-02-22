@@ -5,14 +5,14 @@ use std::collections::HashMap;
 use crate::LogInfo;
 
 use super::Format;
+use super::TransformError;
 
 pub struct LogstashFormat;
 
 impl Format for LogstashFormat {
     type Input = LogInfo;
-    type Error = ();
 
-    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, TransformError> {
         let mut logstash_object = json!({"@message": info.message});
 
         if let Some(Value::String(ts)) = info.meta.remove("timestamp") {

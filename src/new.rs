@@ -15,6 +15,7 @@ pub mod uncolorize;
 /* chaining of formats can be achieved by the `.chain` method on the `Format`
 instance hence the `combine` format is not needed  */
 
+#[derive(Debug)]
 pub enum TransformError {
     TransformationFailed,
     ChainInterrupted,
@@ -22,9 +23,8 @@ pub enum TransformError {
 
 pub trait Format {
     type Input;
-    type Error;
 
-    fn try_transform(&self, input: Self::Input) -> Result<Self::Input, Self::Error>;
+    fn try_transform(&self, input: Self::Input) -> Result<Self::Input, TransformError>;
 
     fn transform(&self, input: Self::Input) -> Option<Self::Input> {
         self.try_transform(input).ok()
@@ -70,17 +70,22 @@ pub struct ChainedFormat<F1, F2> {
     next: F2,
 }
 
-impl<T, E, F1, F2> Format for ChainedFormat<F1, F2>
+impl<T, F1, F2> Format for ChainedFormat<F1, F2>
 where
-    F1: Format<Input = T, Error = E>,
-    F2: Format<Input = T, Error = E>,
+    F1: Format<Input = T>,
+    F2: Format<Input = T>,
 {
     type Input = T;
-    type Error = E;
 
-    fn try_transform(&self, input: Self::Input) -> Result<Self::Input, Self::Error> {
-        let intermediate = self.first.try_transform(input)?;
-        self.next.try_transform(intermediate)
+    fn try_transform(&self, input: T) -> Result<T, TransformError> {
+        let intermediate = self
+            .first
+            .try_transform(input)
+            .map_err(|_e| TransformError::ChainInterrupted)?;
+
+        self.next
+            .try_transform(intermediate)
+            .map_err(|_e| TransformError::ChainInterrupted)
     }
 
     fn transform(&self, input: T) -> Option<T> {
@@ -94,11 +99,10 @@ where
 struct UpperCase;
 impl Format for UpperCase {
     type Input = String;
-    type Error = ();
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
         if input.is_empty() {
-            Err(())
+            Err(TransformError::TransformationFailed)
         } else {
             Ok(input.to_uppercase())
         }
@@ -108,9 +112,8 @@ impl Format for UpperCase {
 pub struct ReverseFormat;
 impl Format for ReverseFormat {
     type Input = String;
-    type Error = ();
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
         Ok(input.chars().rev().collect())
     }
 }
@@ -118,9 +121,8 @@ impl Format for ReverseFormat {
 struct AddSuffix(String);
 impl Format for AddSuffix {
     type Input = String;
-    type Error = ();
 
-    fn try_transform(&self, input: String) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, input: String) -> Result<Self::Input, TransformError> {
         Ok(format!("{}{}", input, self.0))
     }
 }

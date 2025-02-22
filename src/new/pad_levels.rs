@@ -1,7 +1,7 @@
 use crate::LogInfo;
 use std::collections::{HashMap, HashSet};
 
-use super::Format;
+use super::{Format, TransformError};
 
 #[derive(Clone)]
 pub struct Padder {
@@ -65,9 +65,8 @@ impl Padder {
 
 impl Format for Padder {
     type Input = LogInfo;
-    type Error = (); // No actual error handling needed
 
-    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, mut info: LogInfo) -> Result<Self::Input, TransformError> {
         if let Some(padding) = self.paddings.get(&info.level) {
             info.message = format!("{}{}", padding, info.message);
         }

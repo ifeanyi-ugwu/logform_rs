@@ -1,7 +1,7 @@
 use crate::{utils::format_json::format_json, LogInfo};
 use serde_json::{Map, Value};
 
-use super::Format;
+use super::{Format, TransformError};
 
 #[derive(Clone)]
 pub struct PrettyPrinter {
@@ -45,9 +45,8 @@ impl PrettyPrinter {
 
 impl Format for PrettyPrinter {
     type Input = LogInfo;
-    type Error = (); // No actual error handling needed
 
-    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, Self::Error> {
+    fn try_transform(&self, info: LogInfo) -> Result<Self::Input, TransformError> {
         Ok(self.format_log(&info))
     }
 }
