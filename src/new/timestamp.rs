@@ -1,6 +1,6 @@
 use super::Format;
 use crate::LogInfo;
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use serde_json::json;
 
 #[derive(Clone, Default)]
