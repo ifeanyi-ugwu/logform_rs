@@ -4,6 +4,7 @@ pub mod colorize;
 pub mod json;
 pub mod label;
 pub mod logstash;
+mod macros;
 pub mod metadata;
 pub mod ms;
 pub mod pad_levels;
