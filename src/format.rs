@@ -51,6 +51,13 @@ impl Format {
             }
         }
     }
+
+    pub fn chain(self, next: Format) -> Format {
+        Format::new(move |info, opts| {
+            self.transform(info, opts.clone())
+                .and_then(|info| next.transform(info, opts))
+        })
+    }
 }
 
 impl Clone for Format {

@@ -74,7 +74,7 @@ let info = LogInfo::new("info", "Hey! Log something?").with_meta("key", "value")
 info.without_meta("key");
 
 //get meta
-info.get_meta("key");
+info.meta.get("key");
 ```
 
 Several of the formats in `logform` itself add to the meta:

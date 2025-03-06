@@ -4,6 +4,7 @@ mod colorize;
 mod combine;
 pub mod config;
 mod format;
+pub mod format_trait;
 mod json;
 mod label;
 mod log_info;

@@ -1,8 +1,14 @@
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+use serde_json::Value;
 use std::collections::HashMap;
 
-use serde_json::{Map, Value};
+#[cfg(feature = "serde")]
+use std::io::Result as IoResult;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct LogInfo {
     pub level: String,
     pub message: String,
@@ -32,27 +38,61 @@ impl LogInfo {
         self
     }
 
-    pub fn get_meta<K: AsRef<str>>(&self, key: K) -> Option<&Value> {
-        self.meta.get(key.as_ref())
+    /// Convert LogInfo to JSON bytes
+    #[cfg(feature = "serde")]
+    pub fn to_bytes(&self) -> IoResult<Vec<u8>> {
+        serde_json::to_vec(self)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
     }
 
-    pub fn meta_as_str<K: AsRef<str>>(&self, key: K) -> Option<&str> {
-        self.get_meta(key).and_then(Value::as_str)
+    /// Convert JSON bytes to LogInfo
+    #[cfg(feature = "serde")]
+    pub fn from_bytes(bytes: &[u8]) -> IoResult<Self> {
+        serde_json::from_slice(bytes)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
     }
+}
 
-    pub fn meta_as_bool<K: AsRef<str>>(&self, key: K) -> Option<bool> {
-        self.get_meta(key).and_then(Value::as_bool)
-    }
+#[macro_export]
+macro_rules! log_info {
+    // Without metadata
+    ($level:ident, $msg:expr) => {{
+        $crate::LogInfo::new(stringify!($level), $msg)
+    }};
 
-    pub fn meta_as_f64<K: AsRef<str>>(&self, key: K) -> Option<f64> {
-        self.get_meta(key).and_then(Value::as_f64)
-    }
+    // With metadata
+    ($level:ident, $msg:expr, $($key:ident = $value:expr),*) => {{
+        let mut log_entry = $crate::LogInfo::new(stringify!($level), $msg);
+        $(
+            log_entry = log_entry.with_meta(stringify!($key), $value);
+        )*
+        log_entry
+    }};
+}
 
-    pub fn meta_as_object<K: AsRef<str>>(&self, key: K) -> Option<&Map<String, Value>> {
-        self.get_meta(key).and_then(Value::as_object)
-    }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
 
-    pub fn meta_as_array<K: AsRef<str>>(&self, key: K) -> Option<&Vec<Value>> {
-        self.get_meta(key).and_then(Value::as_array)
+    #[cfg(feature = "serde")]
+    #[test]
+    fn test_byte_serialization_and_deserialization() {
+        let log = LogInfo::new("INFO", "Test message")
+            .with_meta("user", "Alice")
+            .with_meta("attempts", 3);
+
+        let json_bytes = log.to_bytes().expect("Failed to serialize to JSON");
+        //println!("Serialized JSON bytes: {:?}", json_bytes);
+
+        /*let json_str = String::from_utf8(json_bytes.clone()).expect("Invalid UTF-8");
+        println!("Deserialized JSON string: {}", json_str);*/
+        let deserialized_log =
+            LogInfo::from_bytes(&json_bytes).expect("Failed to deserialize JSON");
+        //println!("Deserialized JSON: {:?}", deserialized_log);
+        assert_eq!(deserialized_log.level, "INFO");
+        assert_eq!(deserialized_log.message, "Test message");
+        assert_eq!(deserialized_log.meta["user"], json!("Alice"));
+        assert_eq!(deserialized_log.meta["attempts"], json!(3));
     }
 }
