@@ -51,6 +51,48 @@ impl LogInfo {
         serde_json::from_slice(bytes)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
     }
+
+    /// Convert serde_json::Value to LogInfo
+    pub fn from_value(value: Value) -> Result<Self, String> {
+        if let Value::Object(map) = value {
+            let level = map
+                .get("level")
+                .and_then(Value::as_str)
+                .ok_or("Missing or invalid 'level' field")?
+                .to_string();
+
+            let message = map
+                .get("message")
+                .and_then(Value::as_str)
+                .ok_or("Missing or invalid 'message' field")?
+                .to_string();
+
+            let mut meta = HashMap::new();
+            if let Some(meta_value) = map.get("meta") {
+                if let Value::Object(meta_map) = meta_value.clone() {
+                    for (key, value) in meta_map {
+                        meta.insert(key, value);
+                    }
+                }
+            }
+
+            Ok(Self {
+                level,
+                message,
+                meta,
+            })
+        } else {
+            Err("Input value is not a JSON object".to_string())
+        }
+    }
+
+    pub fn to_value(&self) -> Value {
+        serde_json::json!({
+            "level": self.level,
+            "message": self.message,
+            "meta": self.meta,
+        })
+    }
 }
 
 #[macro_export]
@@ -83,16 +125,32 @@ mod tests {
             .with_meta("attempts", 3);
 
         let json_bytes = log.to_bytes().expect("Failed to serialize to JSON");
-        //println!("Serialized JSON bytes: {:?}", json_bytes);
-
-        /*let json_str = String::from_utf8(json_bytes.clone()).expect("Invalid UTF-8");
-        println!("Deserialized JSON string: {}", json_str);*/
         let deserialized_log =
             LogInfo::from_bytes(&json_bytes).expect("Failed to deserialize JSON");
-        //println!("Deserialized JSON: {:?}", deserialized_log);
+
         assert_eq!(deserialized_log.level, "INFO");
         assert_eq!(deserialized_log.message, "Test message");
         assert_eq!(deserialized_log.meta["user"], json!("Alice"));
         assert_eq!(deserialized_log.meta["attempts"], json!(3));
+    }
+
+    #[test]
+    fn test_from_value() {
+        let json_value = json!({
+            "level": "DEBUG",
+            "message": "Another test message",
+            "meta": {
+                "id": 12345,
+                "status": "pending"
+            }
+        });
+
+        let log_info =
+            LogInfo::from_value(json_value).expect("Failed to create LogInfo from Value");
+
+        assert_eq!(log_info.level, "DEBUG");
+        assert_eq!(log_info.message, "Another test message");
+        assert_eq!(log_info.meta["id"], json!(12345));
+        assert_eq!(log_info.meta["status"], json!("pending"));
     }
 }
