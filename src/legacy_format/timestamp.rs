@@ -1,4 +1,6 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 use chrono::{DateTime, Utc};
 use serde_json::json;
 

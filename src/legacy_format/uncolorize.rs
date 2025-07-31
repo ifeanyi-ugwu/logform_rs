@@ -1,4 +1,6 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -27,8 +29,8 @@ fn strip_colors(input: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::super::colorize;
     use super::*;
-    use crate::colorize;
     use colored::control::set_override;
     use serde_json::json;
 

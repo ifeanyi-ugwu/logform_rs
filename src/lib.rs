@@ -1,38 +1,12 @@
-mod align;
-mod cli;
-mod colorize;
-mod combine;
 pub mod config;
-mod format;
-pub mod format_trait;
-mod json;
-mod label;
+mod formats;
+pub mod legacy_format;
 mod log_info;
-mod logstash;
-mod metadata;
-mod ms;
-mod pad_levels;
-mod pretty_print;
-mod printf;
-mod simple;
-mod timestamp;
-mod uncolorize;
 mod utils;
 
-pub use align::align;
-pub use cli::cli;
-pub use colorize::colorize;
-pub use combine::combine;
-pub use format::{Format, FormatOptions};
-pub use json::json;
-pub use label::label;
+pub use formats::{
+    align::align, cli::cli, colorize::colorize, json::json, label::label, logstash::logstash,
+    metadata::metadata, ms::ms, pad_levels::pad_levels, pretty_print::pretty_print, printf::printf,
+    simple::simple, timestamp::timestamp, uncolorize::uncolorize, Format,
+};
 pub use log_info::LogInfo;
-pub use logstash::logstash;
-pub use metadata::metadata;
-pub use ms::ms;
-pub use pad_levels::pad_levels;
-pub use pretty_print::pretty_print;
-pub use printf::printf;
-pub use simple::simple;
-pub use timestamp::timestamp;
-pub use uncolorize::uncolorize;

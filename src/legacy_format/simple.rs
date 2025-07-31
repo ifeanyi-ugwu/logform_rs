@@ -1,4 +1,6 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 
 pub fn simple() -> Format {
     Format::new(|info: LogInfo, _opts: FormatOptions| {

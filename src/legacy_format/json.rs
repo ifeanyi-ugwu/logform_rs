@@ -1,4 +1,6 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 use serde_json::{Map, Value};
 
 pub fn json() -> Format {

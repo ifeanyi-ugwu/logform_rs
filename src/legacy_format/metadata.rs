@@ -1,6 +1,8 @@
 use serde_json::json;
 
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 use std::collections::HashMap;
 
 pub fn metadata() -> Format {

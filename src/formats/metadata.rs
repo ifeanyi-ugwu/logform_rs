@@ -65,6 +65,10 @@ impl Format for MetadataFormat {
     }
 }
 
+pub fn metadata() -> MetadataFormat {
+    MetadataFormat::new()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,4 +1,6 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 use serde_json::json;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -40,6 +42,7 @@ pub fn logstash() -> Format {
 
 #[cfg(test)]
 mod tests {
+    use super::super::timestamp;
     use super::*;
     use serde_json::Value;
 
@@ -52,7 +55,7 @@ mod tests {
         // Apply the timestamp format first
         let mut custom_opts = HashMap::new();
         custom_opts.insert("format".to_string(), "%+".to_string());
-        let timestamp_format = crate::timestamp();
+        let timestamp_format = timestamp();
         let info = timestamp_format.transform(info, Some(custom_opts)).unwrap();
 
         let result = logstash_format.transform(info, None).unwrap();
@@ -82,7 +85,7 @@ mod tests {
         // Apply the timestamp format first
         let mut custom_opts = HashMap::new();
         custom_opts.insert("format".to_string(), "%+".to_string());
-        let timestamp_format = crate::timestamp();
+        let timestamp_format = timestamp();
         let info = timestamp_format.transform(info, Some(custom_opts)).unwrap();
 
         let result = logstash_format.transform(info, None).unwrap();

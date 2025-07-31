@@ -3,478 +3,311 @@
 ![Crates.io](https://img.shields.io/crates/v/logform)
 ![Rust](https://img.shields.io/badge/rust-%E2%9C%94-brightgreen)
 
-A flexible log format library designed for chaining and composing log transformations in Rust.
+A flexible log formatting library designed for chaining and composing log transformations in Rust.
+
+## Overview
+
+`logform` provides a powerful, extensible system to transform structured log messages via composable formatters called **Formats**. Each format implements a common `Format` trait, enabling flexible composition and transformation pipelines.
+
+## Quick Start
 
 ```rust
-use logform::{align, colorize, combine, printf, timestamp, LogInfo};
+use logform::{timestamp, colorize, align, Format, LogInfo};
 
-pub fn initialize_and_test_formats() {
-    let aligned_with_colors_and_time = combine(vec![
-        colorize(),
-        timestamp(),
-        align(),
-        printf(|info| {
-            format!(
-                "{} {}: {}",
-                info.meta_as_str("timestamp").unwrap_or(""), info.level, info.message
-            )
-        }),
-    ]);
+fn main() {
+    // Compose multiple formats using chaining
+    let formatter = timestamp()
+        .chain(colorize())
+        .chain(align());
 
-    let mut info = LogInfo::new("info", "hi");
-    info = aligned_with_colors_and_time.transform(info, None).unwrap();
-    println!("{}", info.message);
+    let info = LogInfo::new("info", "Hello, logform!");
+
+    // Apply the composed formatter
+    if let Some(transformed) = formatter.transform(info) {
+        println!("{}", transformed.message);
+    }
 }
 ```
 
-- [`LogInfo` Objects](#loginfo-objects)
-- [Understanding Formats](#understanding-formats)
-  - [Combining Formats](#combining-formats)
-  - [Filtering `LogInfo` Objects](#filtering-loginfo-objects)
-- [Formats](#formats)
-  - [Align](#align)
-  - [CLI](#cli)
-  - [Colorize](#colorize)
-  - [Combine](#combine)
-  - [JSON](#json)
-  - [Label](#label)
-  - [Logstash](#logstash)
-  - [Metadata](#metadata)
-  - [PadLevels](#padlevels)
-  - [PrettyPrint](#prettyprint)
-  - [Printf](#printf)
-  - [Simple](#simple)
-  - [Timestamp](#timestamp)
-  - [Uncolorize](#uncolorize)
+## `LogInfo` — Structured Log Data
 
-## `LogInfo` Objects
-
-The `LogInfo` struct represents a single log message.
+At the core is the `LogInfo` struct representing a single log message:
 
 ```rust
- pub struct LogInfo {
+pub struct LogInfo {
     pub level: String,
     pub message: String,
-    pub meta: HashMap<String, Value>,
+    pub meta: std::collections::HashMap<String, Value>,
 }
-
-let info = LogInfo {
-    level: "info".into(),                  // Level of the logging message
-    message: "Hey! Log something?".into(), // Descriptive message being logged
-    meta: HashMap::new(),                   // Other properties
-};
-
-//OR
-let info = LogInfo::new("info", "Hey! Log something?");
-
-//add meta
-let info = LogInfo::new("info", "Hey! Log something?").with_meta("key", "value");//you can chain more
-
-//remove meta
-info.without_meta("key");
-
-//get meta
-info.meta.get("key");
 ```
 
-Several of the formats in `logform` itself add to the meta:
+### Common usage
 
-| Property    | Format added by | Description                                            |
-| ----------- | --------------- | ------------------------------------------------------ |
-| `timestamp` | `timestamp()`   | Timestamp the message was received.                    |
-| `ms`        | `ms()`          | Number of milliseconds since the previous log message. |
+- Create a new `LogInfo`:
 
-As a consumer, you may add whatever meta you wish
+  ```rust
+  let info = LogInfo::new("info", "User logged in");
+  ```
 
-## Understanding Formats
+- Add metadata fields:
 
-Formats in `logform` are structs that implement a `transform` method with the signature `transform(info: LogInfo, opts: FormatOptions) -> Option<LogInfo>`.
+  ```rust
+  let info = info.with_meta("user_id", 12345)
+                 .with_meta("session_id", "abcde12345");
+  ```
 
-- `info`: The LogInfo struct representing the log message.
-- `opts`: Settings(Options) specific to the current instance of the format.
+- Remove metadata:
 
-They are expected to return one of two things:
+  ```rust
+  let info = info.without_meta("session_id");
+  ```
 
-- **A `LogInfo` Object** representing a new transformed version of the `info` argument. The LogInfo struct is treated as immutable, meaning a new instance is created and returned with the desired modifications.
-- **A None value** indicating that the `info` argument should be ignored by the caller. (See: [Filtering `LogInfo` Objects](#filtering-loginfo-objects)) below.
+- Access metadata:
 
-Creating formats is designed to be as simple as possible. To define a new format, use `Format::new()` and pass a closure that implements the transformation logic:`transform(info: LogInfo, opts: FormatOptions)`.
+  ```rust
+  if let Some(user_id) = info.meta.get("user_id") {
+      // use user_id...
+  }
+  ```
 
-The named `Format` returned can be used to create as many copies of the given `Format` as desired:
+## The `Format` Trait
+
+Formats implement the `Format` trait to transform log messages:
 
 ```rust
-use logform::Format;
+pub trait Format {
+    type Input;
 
-fn test_custom_format() {
-    let volume = Format::new(|mut info: LogInfo, opts: FormatOptions| {
-        if let Some(opts) = opts {
-            if opts.get("yell").is_some() {
-                info.message = info.message.to_uppercase();
-            } else if opts.get("whisper").is_some() {
-                info.message = info.message.to_lowercase();
-            }
-        }
-        Some(info)
-    });
+    /// Transforms the input log message, returning:
+    /// - `Some(LogInfo)` for transformed logs
+    /// - `None` to filter out the log (skip it)
+    fn transform(&self, input: Self::Input) -> Option<LogInfo>;
 
-    // `volume` is now a Format instance that can be used for transformations
-    let mut scream_opts = HashMap::new();
-    scream_opts.insert("yell".to_string(), "true".to_string());
-    let scream = volume.clone();
-
-    let info = LogInfo::new("info", "sorry for making you YELL in your head!");
-
-    let result = scream.transform(info, Some(scream_opts)).unwrap();
-    println!("{}", result.message);
-    //SORRY FOR MAKING YOU YELL IN YOUR HEAD!
-
-    // `volume` can be used multiple times with different options
-    let mut whisper_opts = HashMap::new();
-    whisper_opts.insert("whisper".to_string(), "true".to_string());
-    let whisper = volume;
-
-    let info2 = LogInfo::new("info", "WHY ARE THEY MAKING US YELL SO MUCH!");
-
-    let result2 = whisper.transform(info2, Some(whisper_opts)).unwrap();
-    println!("{}", result2.message);
-    //why are they making us yell so much!
+    /// Chain two formats, applying one after another
+    fn chain<F>(self, next: F) -> ChainedFormat<Self, F>
+    where
+        Self: Sized,
+        F: Format,
+    {
+        ChainedFormat { first: self, next }
+    }
 }
-
 ```
 
-### Combining Formats
+- **Transform:** Modify or produce a new log from input.
+- **Filter (return `None`):** Skip processing or output for certain logs.
+- **Chaining:** Compose formats easily in sequence.
 
-Any number of formats may be combined into a single format using `logform::combine`. Since `logform::combine` takes no options, it returns a pre-created instance of the combined format.
+## Composing Formats
+
+You can chain multiple formats using the `chain` method:
 
 ```rust
-use logform::{combine, simple, timestamp};
-
-fn test_combine_formatters() {
-    // Combine timestamp and simple
-    let combined_formatter = combine(vec![timestamp(), simple()]);
-
-    let info = LogInfo::new("info", "Test message").with_meta("key", "value");
-
-    let result = combined_formatter.transform(info, None).unwrap();
-    println!("{}", result.message);
-}
-//info: Test message {"key":"value","timestamp":"2024-08-27 02:39:15"}
+let combined = timestamp().chain(json()).chain(colorize());
 ```
 
-### Filtering `LogInfo` Objects
-
-If you wish to filter out a given `LogInfo` Object completely, simply return `None`.
+Or use the `chain!` macro for succinct chaining of multiple formats:
 
 ```rust
-use logform::Format;
+use logform::chain;
 
-fn test_ignore_private() {
-    let ignore_private = Format::new(|info: LogInfo, _opts: FormatOptions| {
+let combined = chain!(timestamp(), json(), colorize());
+```
+
+Chaining stops early when any format returns `None` (useful for filtering logs).
+
+## Available Formats
+
+### `timestamp`
+
+Adds a timestamp to the log metadata.
+
+**Builder methods:**
+
+- `.with_format(&str)` — Customize timestamp display format (uses chrono formatting).
+- `.with_alias(&str)` — Add an alias field for the timestamp.
+
+```rust
+let ts = timestamp()
+    .with_format("%Y-%m-%d %H:%M:%S")
+    .with_alias("time");
+```
+
+### `simple`
+
+A minimal text formatter producing output like:
+
+```text
+level:    message { ...metadata... }
+```
+
+Respects padding stored in meta under `"padding"` to align levels nicely.
+
+### `json`
+
+Serializes the log info into a JSON string:
+
+```json
+{ "level": "info", "message": "User logged in", "user_id": 12345 }
+```
+
+### `align`
+
+Adds a tab character before the message, useful for aligned output.
+
+### `cli`
+
+Combines colorizing and padding:
+
+- Colors the level and/or message.
+- Pads messages for neat CLI output.
+- Configurable via builder methods like `.with_levels()`, `.with_colors()`, `.with_filler()`, and `.with_all()`.
+
+Example:
+
+```rust
+let cli_format = cli()
+    .with_filler("*")
+    .with_all(true);
+
+let out = cli_format.transform(info).unwrap();
+```
+
+### `colorize`
+
+Provides colorization for levels and messages via `colored` crate.
+
+Configurable options include:
+
+- `.with_all(bool)`
+- `.with_level(bool)`
+- `.with_message(bool)`
+- `.with_colors(...)` to specify colors for levels.
+
+### `uncolorize`
+
+Strips ANSI color codes from level and/or message.
+
+### `label`
+
+Adds a label either as a prefix to the message or into metadata.
+
+Builder:
+
+- `.with_label("MY_LABEL")`
+- `.with_message(true|false)` — if true, prefix message; else add to meta.
+
+### `logstash`
+
+Transforms the log info into a Logstash-compatible JSON string with fields like `@timestamp`, `@message`, and `@fields`.
+
+### `metadata`
+
+Collects metadata keys into a single key.
+
+Builder methods:
+
+- `.with_key(&str)` — metadata container key (default: `"metadata"`).
+- `.with_fill_except(Vec<&str>)` — exclude keys.
+- `.with_fill_with(Vec<&str>)` — include only these keys.
+
+### `ms`
+
+Adds time elapsed since the previous log message in milliseconds in the meta key `"ms"`.
+
+### `pad_levels`
+
+Pads the message to align levels uniformly.
+
+Configurable:
+
+- `.with_levels(...)`
+- `.with_filler(...)`
+
+### `pretty_print`
+
+Prettifies log output in a human-friendly format, optionally colorized.
+
+Builder:
+
+- `.with_colorize(bool)`
+
+### `printf`
+
+Customize the output with any formatting closure:
+
+```rust
+let printf_format = printf(|info| {
+    format!("{} - {}: {}",
+        info.level,
+        info.message,
+        serde_json::to_string(&info.meta).unwrap()
+    )
+});
+```
+
+## Filtering Logs
+
+A format can filter out unwanted logs by returning `None` from `transform`.
+
+Example:
+
+```rust
+struct IgnorePrivate;
+
+impl Format for IgnorePrivate {
+    type Input = LogInfo;
+
+    fn transform(&self, info: LogInfo) -> Option<LogInfo> {
         if let Some(private) = info.meta.get("private") {
             if private == "true" {
                 return None;
             }
         }
         Some(info)
-    });
-
-    let format = ignore_private;
-
-    let public_info = LogInfo::new("error", "Public error to share").with_meta("private", "false");
-
-    let result = format.transform(public_info, None).unwrap();
-    println!("{}", result.message);
-    //Public error to share
-
-    let private_info =
-        LogInfo::new("error", "This is super secret - hide it.").with_meta("private", "true");
-
-    let result = format.transform(private_info, None);
-    println!("{:?}", result);
-    // None
+    }
 }
 ```
 
-The use of `logform::combine` will respect any `None` values returned and stop the evaluation of later formats in the series. For example:
+When chained, subsequent formats will not run if any upstream returns `None`.
+
+## Extending `logform`
+
+Implement `Format` for custom transformations over any input type:
 
 ```rust
-use logform::{combine, Format};
+struct UpperCase;
 
-let will_never_panic = combine(vec![
-    Format::new(|_info, _opts| None), // Ignores everything
-    Format::new(|_info, _opts| {
-        panic!("Never reached");
-    }),
-]);
+impl Format for UpperCase {
+    type Input = String;
 
-let info = LogInfo::new("info", "wow such testing");
-
-println!("{:?}", will_never_panic.transform(info, None));
-// None
+    fn transform(&self, input: String) -> Option<String> {
+        if input.is_empty() {
+            None
+        } else {
+            Some(input.to_uppercase())
+        }
+    }
+}
 ```
 
-## Formats
+Then chain with other formats for composable log processing.
 
-### Align
+## Installation
 
-The `align` format adds a tab character before the message.
-
-```rust
-let aligned_format = align();
-```
-
-### CLI
-
-The `cli` format is a combination of the `colorize` and `pad_levels` formats and accepts both of their options. It pads, colorize, and then formats the log message as `level:message`.
-
-```rust
-use std::collections::HashMap;
-use crate::{Format, LogInfo, cli};
-
-let cli_format = cli()
-    .with_option("colors", &serde_json::to_string(&HashMap::from([("info", "blue")])).unwrap())
-    .with_option("filler", "*")
-    .with_option("all", "true");
-
-let info = LogInfo::new("info", "my message");
-let transformed_info = cli_format.transform(info, None);
-
-println!("{:?}", transformed_info);
-// Output: LogInfo { level: "\x1b[34minfo\x1b[39m", message: "\x1b[34m**my message\x1b[39m", meta: {} }
-```
-
-### Colorize
-
-The `colorize` format adds colors to log levels and messages.
-
-```rust
-let colorizer = colorize()
-    .with_option("colors", r#"{"info": ["blue"], "error": ["red", "bold"]}"#)
-    .with_option("all", "true");
-```
-
-### Combine
-
-The `combine` format allows you to chain multiple formats together.
-
-```rust
-let combined_format = combine(vec![
-    timestamp(),
-    json(),
-    colorize().with_option("colors", r#"{"info": ["blue"]}"#),
-]);
-```
-
-### JSON
-
-The `json` format converts the log info into a JSON string.
-
-```rust
-let json_format = json();
-```
-
-### Label
-
-The `label` format adds a specified label to the log message or metadata. It accepts the following options:
-
-- **label**: The label to prepend to the message or store in the metadata.
-- **message** (optional): Determines where the label is added.
-  - **true** (default): Adds the label before the message.
-  - **false**: Adds the label to the `meta` field instead of the message.
-
-```rust
-use std::collections::HashMap;
-use crate::{Format, LogInfo, label};
-
-let label_format = label();
-let info = LogInfo::new("info", "Test message");
-
-let mut opts = HashMap::new();
-opts.insert("label".to_string(), "MY_LABEL".to_string());
-opts.insert("message".to_string(), "true".to_string());
-
-let result = label_format.transform(info, Some(opts)).unwrap();
-println!("{:?}", result);
-// Output: LogInfo { level: "info", message: "[MY_LABEL] Test message", meta: {} }
-
-opts.insert("message".to_string(), "false".to_string());
-let result_meta = label_format.transform(info, Some(opts)).unwrap();
-println!("{:?}", result_meta);
-// Output: LogInfo { level: "info", message: "Test message", meta: {"label": "MY_LABEL"} }
-```
-
-### Logstash
-
-The `logstash` format converts the log info into a Logstash-compatible JSON string.
-
-```rust
-use logform::{ combine, logstash, timestamp };
-
-let logstash_format = combine(vec![timestamp(), logstash()]);
-
-let mut info = LogInfo::new("info", "my message");
-
-let formatted_info = logstash_format.transform(info, None).unwrap();
-
-println!("{}", formatted_info.message);
-// {"@message":"my message","@timestamp":"2025-01-12T13:10:05.202213+00:00","@fields":{"level":"info"}}
-```
-
-### Metadata
-
-The `metadata` format collects metadata from the log and adds it to the specified key. It defaults to using the key `"metadata"`, and includes **all** the keys in `info.meta` unless exclusions are specified.
-
-It accepts the following options:
-
-- **key** (optional): Name of the key used for the metadata. Default is `"metadata"`.
-- **fillExcept** (optional): Comma-separated list of keys to exclude from the metadata object.
-- **fillWith** (optional): Comma-separated list of keys to include in the metadata object.
-
-By default, **all keys** in `info.meta` are collected into the metadata, except those specified in `fillExcept`.
-
-```rust
-use logform::{metadata, LogInfo};
-use serde_json::json;
-use std::collections::HashMap;
-
-let metadata_format = metadata();
-
-let mut info = LogInfo::new("info", "Test message");
-info.meta.insert("key1".to_string(), "value1".into());
-info.meta.insert("key2".to_string(), "value2".into());
-
-// Example 1: Default behavior (no options given)
-let result = metadata_format.transform(info.clone(), None).unwrap();
-println!("{:?}", result);
-// Output: LogInfo { level: "info", message: "Test message", meta: {"metadata": Object {"key1": String("value1"), "key2": String("value2")}} }
-
-
-// Example 2: Only include `key1` in metadata
-let mut opts = HashMap::new();
-opts.insert("fillWith".to_string(), "key1".to_string());
-let result = metadata_format.transform(info.clone(), Some(opts)).unwrap();
-println!("{:?}", result);
-// Output: LogInfo { level: "info", message: "Test message", meta: {"key2": String("value2"), "metadata": Object {"key1": String("value1")}} }
-
-// Example 3: Exclude only `key1` from metadata
-let mut opts = HashMap::new();
-opts.insert("fillExcept".to_string(), "key1".to_string());
-let result = metadata_format.transform(info, Some(opts)).unwrap();
-println!("{:?}", result.meta);
-// Output: LogInfo { level: "info", message: "Test message", meta: {"metadata": Object {"key2": String("value2")}, "key1": String("value1")} }
-```
-
-### PadLevels
-
-The `pad_levels` format pads levels to be the same length.
-
-```rust
-use std::collections::HashMap;
-use crate::{Format, LogInfo, pad_levels};
-
-let pad_levels_format = pad_levels();
-
-let info = LogInfo::new("info", "my message");
-let transformed_info = pad_levels_format.transform(info, None);
-
-println!("{:?}", transformed_info);
-// Output: LogInfo { level: "info", message: "  my message", meta: {} }
-```
-
-### Ms
-
-The `ms` format adds the time in milliseconds since the last log message.
-
-```rust
-let ms_format = ms();
-```
-
-### PrettyPrint
-
-The `pretty_print` format provides a more readable output of the log info.
-
-```rust
-let pretty_format = pretty_print().with_option("colorize", "true");
-```
-
-### Printf
-
-The `printf` format allows you to define a custom formatting function.
-
-```rust
-let printf_format = printf(|info| {
-    format!("{} - {}: {}", info.meta_as_str("timestamp").unwrap_or(""), info.level, info.message)
-});
-```
-
-### Simple
-
-The `simple` format provides a basic string representation of the log info.
-
-```rust
-let simple_format = simple();
-```
-
-### Timestamp
-
-The `timestamp` format adds a timestamp to the log info.
-
-```rust
-let timestamp_format = timestamp()
-    .with_option("format", "%Y-%m-%d %H:%M:%S")
-    .with_option("alias", "log_time");
-```
-
-### Uncolorize
-
-The `uncolorize` format removes ANSI color codes from the log info.
-
-```rust
-let uncolorize_format = uncolorize();
-```
-
-## Usage
-
-To use logform in your project, add it to your `Cargo.toml`:
+Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logform = "0.3"
+logform = "0.5"
 ```
 
-or with
+Or use cargo:
 
 ```bash
 cargo add logform
 ```
 
-Then, in your Rust code:
-
-```rust
-use logform::{LogInfo, combine, timestamp, json};
-
-let format = combine(vec![
-    timestamp(),
-    json(),
-]);
-
-let info = LogInfo::new("info", "Test message");
-let formatted_info = format.transform(info, None).unwrap();
-println!("{}", formatted_info.message);
-```
-
-## Testing
-
-Run the tests using:
-
-```bash
-cargo test
-```
-
 ## License
 
 This project is licensed under the MIT License.
-
-## Acknowledgements
-
-This library is inspired by the [logform](https://github.com/winstonjs/logform) package for Node.js.

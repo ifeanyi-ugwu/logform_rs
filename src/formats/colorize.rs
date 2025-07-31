@@ -186,6 +186,10 @@ fn apply_color<'a>(
     }
 }
 
+pub fn colorize() -> Colorizer {
+    Colorizer::new()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,4 +1,6 @@
-use crate::{config, Format, FormatOptions, LogInfo};
+use crate::{config, LogInfo};
+
+use super::{Format, FormatOptions};
 use colored::*;
 use std::collections::HashMap;
 

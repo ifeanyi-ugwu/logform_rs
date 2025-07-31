@@ -1,4 +1,5 @@
-use crate::{Format, FormatOptions, LogInfo};
+use super::{Format, FormatOptions};
+use crate::LogInfo;
 use std::sync::Arc;
 
 pub fn combine(formats: Vec<Format>) -> Format {
@@ -24,8 +25,8 @@ pub fn combine(formats: Vec<Format>) -> Format {
 
 #[cfg(test)]
 mod tests {
+    use super::super::{simple, timestamp};
     use super::*;
-    use crate::{simple, timestamp};
 
     #[test]
     fn test_combine_formatters() {

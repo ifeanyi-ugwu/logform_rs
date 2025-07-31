@@ -1,4 +1,5 @@
-use crate::{Format, FormatOptions, LogInfo};
+use super::{Format, FormatOptions};
+use crate::LogInfo;
 
 pub fn align() -> Format {
     Format::new(move |mut info: LogInfo, _options: FormatOptions| {

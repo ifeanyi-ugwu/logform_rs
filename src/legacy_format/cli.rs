@@ -1,4 +1,5 @@
-use crate::{colorize::Colorizer, config, pad_levels::Padder, Format, FormatOptions, LogInfo};
+use super::{colorize::Colorizer, pad_levels::Padder, Format, FormatOptions};
+use crate::{config, LogInfo};
 use std::collections::HashMap;
 
 #[derive(Clone)]

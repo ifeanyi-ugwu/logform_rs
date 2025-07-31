@@ -1,6 +1,7 @@
 use serde_json::json;
 
-use crate::{Format, FormatOptions, LogInfo};
+use super::{Format, FormatOptions};
+use crate::LogInfo;
 
 pub fn label() -> Format {
     Format::new(|mut info: LogInfo, opts: FormatOptions| {

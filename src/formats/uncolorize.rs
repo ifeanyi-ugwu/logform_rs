@@ -56,8 +56,8 @@ pub fn uncolorize() -> Uncolorize {
 
 #[cfg(test)]
 mod tests {
+    use super::super::colorize::colorize;
     use super::*;
-    use crate::colorize;
     use colored::control::set_override;
     use serde_json::json;
 
@@ -65,15 +65,16 @@ mod tests {
     fn test_uncolorize_formatter() {
         set_override(true);
 
-        let colorizer = colorize()
-            .with_option(
-                "colors",
-                &json!({"info": ["blue"], "error": ["red", "bold"]}).to_string(),
-            )
-            .with_option("all", "true");
+        let colors = vec![
+            ("info".to_string(), json!(["blue"])),
+            ("error".to_string(), json!(["red", "bold"])),
+        ]
+        .into_iter()
+        .collect::<std::collections::HashMap<_, _>>();
+        let colorizer = colorize().with_colors(colors).with_all(true);
 
         let info = LogInfo::new("info", "This is an info message").with_meta("key", "value");
-        let colorized_info = colorizer.transform(info, None).unwrap();
+        let colorized_info = colorizer.transform(info).unwrap();
 
         let uncolorizer = uncolorize();
         let uncolorized_info = uncolorizer.transform(colorized_info.clone()).unwrap();

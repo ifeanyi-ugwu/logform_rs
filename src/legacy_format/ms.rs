@@ -1,4 +1,6 @@
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::time::Instant;

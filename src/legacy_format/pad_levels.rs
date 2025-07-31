@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{Format, FormatOptions, LogInfo};
+use crate::LogInfo;
+
+use super::{Format, FormatOptions};
 
 #[derive(Clone)]
 pub struct Padder {
