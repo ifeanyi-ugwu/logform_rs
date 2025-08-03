@@ -1,12 +1,14 @@
 use super::Format;
+use crate::LogInfo;
 
 pub struct AlignFormat;
 
 impl Format for AlignFormat {
-    type Input = String;
+    type Input = LogInfo;
 
-    fn transform(&self, input: String) -> Option<Self::Input> {
-        Some(format!("\t{}", input))
+    fn transform(&self, mut info: LogInfo) -> Option<Self::Input> {
+        info.message = format!("\t{}", info.message);
+        Some(info)
     }
 }
 
@@ -20,9 +22,13 @@ mod tests {
 
     #[test]
     fn test_align_format() {
-        let align = AlignFormat;
+        let formatter = AlignFormat;
 
-        let result = align.transform("Test message".to_string());
-        assert_eq!(result, Some("\tTest message".to_string()));
+        let info = LogInfo::new("info", "Test message").with_meta("key", "value");
+
+        let result = formatter.transform(info).unwrap();
+
+        assert!(result.message.starts_with('\t'));
+        assert_eq!(result.message, "\tTest message");
     }
 }

@@ -71,7 +71,7 @@ impl Format for UpperCase {
     }
 }
 
-pub struct ReverseFormat;
+struct ReverseFormat;
 impl Format for ReverseFormat {
     type Input = String;
 
