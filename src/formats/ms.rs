@@ -1,22 +1,27 @@
 use crate::LogInfo;
-use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::time::Instant;
 
 use super::Format;
 
-lazy_static! {
-    static ref PREV_TIME: Mutex<Instant> = Mutex::new(Instant::now());
+pub struct MsFormat {
+    prev_time: Mutex<Instant>,
 }
 
-pub struct MsFormat;
+impl MsFormat {
+    pub fn new() -> Self {
+        MsFormat {
+            prev_time: Mutex::new(Instant::now()),
+        }
+    }
+}
 
 impl Format for MsFormat {
     type Input = LogInfo;
 
     fn transform(&self, mut input: LogInfo) -> Option<Self::Input> {
         let curr = Instant::now();
-        let mut prev_time = PREV_TIME.lock().unwrap();
+        let mut prev_time = self.prev_time.lock().ok()?;
         let diff = curr.duration_since(*prev_time);
         *prev_time = curr;
 
@@ -30,7 +35,7 @@ impl Format for MsFormat {
 }
 
 pub fn ms() -> MsFormat {
-    MsFormat
+    MsFormat::new()
 }
 
 #[cfg(test)]
@@ -41,8 +46,7 @@ mod tests {
 
     #[test]
     fn test_ms_format() {
-        let formatter = MsFormat;
-
+        let formatter = ms();
         let info = LogInfo::new("info", "Test message");
 
         // First transformation (initial reference point)
@@ -60,7 +64,6 @@ mod tests {
             .parse()
             .unwrap();
 
-        //println!("{:?} {:?}", result1, result2);
         assert!(
             (250..350).contains(&ms2_value),
             "Expected ~300ms, but got {}ms",
