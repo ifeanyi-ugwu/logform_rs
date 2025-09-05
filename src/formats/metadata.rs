@@ -52,10 +52,16 @@ impl Format for MetadataFormat {
                 }
             }
         } else {
-            for (key, value) in info.meta.clone().into_iter() {
-                if !self.fill_except.contains(&key) {
-                    metadata.insert(key.clone(), value);
-                    info.meta.remove(&key);
+            // Collect keys to move to avoid cloning the whole map
+            let keys_to_move: Vec<String> = info
+                .meta
+                .keys()
+                .filter(|key| !self.fill_except.contains(*key))
+                .cloned()
+                .collect();
+            for key in keys_to_move {
+                if let Some(value) = info.meta.remove(&key) {
+                    metadata.insert(key, value);
                 }
             }
         }
@@ -71,6 +77,75 @@ pub fn metadata() -> MetadataFormat {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_metadata_with_fill_with_and_fill_except() {
+        let metadata_format = MetadataFormat::new()
+            .with_key("metadata")
+            .with_fill_with(vec!["key1", "key2", "key3"])
+            .with_fill_except(vec!["key2"]);
+        let mut info = LogInfo::new("info", "Test message");
+        info.meta.insert("key1".to_string(), "value1".into());
+        info.meta.insert("key2".to_string(), "value2".into());
+        info.meta.insert("key3".to_string(), "value3".into());
+
+        let result = metadata_format.transform(info).unwrap();
+        let metadata = result.meta.get("metadata").unwrap();
+
+        // Only key1 and key3 should be present, key2 excluded
+        assert_eq!(
+            metadata.get("key1"),
+            Some(&Value::String("value1".to_string()))
+        );
+        assert_eq!(
+            metadata.get("key3"),
+            Some(&Value::String("value3".to_string()))
+        );
+        assert!(metadata.get("key2").is_none());
+    }
+
+    #[test]
+    fn test_metadata_with_empty_meta() {
+        let metadata_format = MetadataFormat::new().with_key("metadata");
+        let info = LogInfo::new("info", "Test message");
+        let result = metadata_format.transform(info).unwrap();
+        let metadata = result.meta.get("metadata").unwrap();
+        assert!(metadata.as_object().unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_metadata_with_fill_with_nonexistent_keys() {
+        let metadata_format = MetadataFormat::new()
+            .with_key("metadata")
+            .with_fill_with(vec!["not_present", "also_missing"]);
+        let mut info = LogInfo::new("info", "Test message");
+        info.meta.insert("key1".to_string(), "value1".into());
+        let result = metadata_format.transform(info).unwrap();
+        let metadata = result.meta.get("metadata").unwrap();
+        // Should be empty since none of the fill_with keys exist
+        assert!(metadata.as_object().unwrap().is_empty());
+        // Original meta should remain unchanged
+        assert_eq!(
+            result.meta.get("key1"),
+            Some(&Value::String("value1".to_string()))
+        );
+    }
+
+    #[test]
+    fn test_metadata_format_default_constructor() {
+        let metadata_format = MetadataFormat::new();
+        let mut info = LogInfo::new("info", "Test message");
+        info.meta.insert("key1".to_string(), "value1".into());
+        let result = metadata_format.transform(info).unwrap();
+        // By default, all keys should be moved into the default key
+        let key = &metadata_format.key;
+        let metadata = result.meta.get(key).unwrap();
+        assert_eq!(
+            metadata.get("key1"),
+            Some(&Value::String("value1".to_string()))
+        );
+        // Should be removed from original meta
+        assert!(result.meta.get("key1").is_none());
+    }
     use super::*;
     use serde_json::Value;
 
