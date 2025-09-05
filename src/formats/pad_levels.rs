@@ -42,7 +42,7 @@ impl Padder {
     fn padding_for_levels(levels: &HashSet<String>, filler: &str) -> HashMap<String, String> {
         let max_length = Self::get_longest_level(levels);
         levels
-            .iter() // ✅ Iterate over HashSet<String>
+            .iter()
             .map(|level| {
                 let padding = Self::padding_for_level(level, filler, max_length);
                 (level.clone(), padding)
@@ -66,11 +66,8 @@ impl Padder {
 impl Format for Padder {
     type Input = LogInfo;
 
-    fn transform(&self, mut info: LogInfo) -> Option<Self::Input> {
-        if let Some(padding) = self.paddings.get(&info.level) {
-            info.message = format!("{}{}", padding, info.message);
-        }
-        Some(info)
+    fn transform(&self, info: LogInfo) -> Option<Self::Input> {
+        self.transform(info)
     }
 }
 
@@ -86,11 +83,8 @@ mod tests {
 
     #[test]
     fn test_padder_with_padding() {
-        let levels = HashMap::from([
-            ("info".to_string(), "info".to_string()),
-            ("error".to_string(), "error".to_string()),
-        ]);
-        let padder = Padder::new().with_levels(levels.keys());
+        let levels = vec!["info".to_string(), "error".to_string()];
+        let padder = Padder::new().with_levels(levels.iter());
 
         let log_info = LogInfo::new("error", "Test message");
         let transformed = padder.transform(log_info).unwrap();
@@ -100,13 +94,13 @@ mod tests {
 
     #[test]
     fn test_padder_with_custom_filler() {
-        let levels = HashMap::from([
-            ("info".to_string(), "info".to_string()),
-            ("debug".to_string(), "debug".to_string()),
-            ("critical".to_string(), "critical".to_string()),
-        ]);
+        let levels = vec![
+            "info".to_string(),
+            "debug".to_string(),
+            "critical".to_string(),
+        ];
         let padder = Padder::new()
-            .with_levels(levels.keys())
+            .with_levels(levels.iter())
             .with_filler("#".to_string());
 
         let log_info = LogInfo::new("debug", "Test message");
