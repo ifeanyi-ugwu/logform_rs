@@ -19,17 +19,19 @@ impl PrettyPrinter {
     }
 
     fn format_log(&self, info: &LogInfo) -> LogInfo {
-        let mut meta = info.meta.clone();
-        meta.remove("level");
-        meta.remove("message");
-        meta.remove("splat");
+        let filtered_meta: std::collections::HashMap<String, Value> = info
+            .meta
+            .iter()
+            .filter(|(k, _)| k != &"level" && k != &"message" && k != &"splat")
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
 
         let mut json_output = Map::new();
         json_output.insert("level".to_string(), Value::String(info.level.clone()));
         json_output.insert("message".to_string(), Value::String(info.message.clone()));
 
-        for (key, value) in meta {
-            json_output.insert(key, value);
+        for (key, value) in &filtered_meta {
+            json_output.insert(key.clone(), value.clone());
         }
 
         let json_value = Value::Object(json_output);
@@ -38,7 +40,7 @@ impl PrettyPrinter {
         LogInfo {
             level: info.level.clone(),
             message: pretty_message,
-            meta: info.meta.clone(),
+            meta: filtered_meta,
         }
     }
 }
@@ -66,22 +68,28 @@ mod tests {
         let formatter = pretty_print();
 
         let info = LogInfo::new("info", "User logged in")
-        .with_meta("user_id", 12345)
-        .with_meta("session_id", "abcde12345")
-        .with_meta(
-            "extra_info",
-            json!({"null": null,"number": 1,"boolean": true,"inner_object":{"null": null,"number": 1,"boolean": true,}}),
-        )
-        .with_meta("empty object", json!({}))
-        .with_meta("empty array", json!([]));
+            .with_meta("user_id", 12345)
+            .with_meta("session_id", "abcde12345")
+            .with_meta(
+                "extra_info",
+                json!({
+                    "null": null,
+                    "number": 1,
+                    "boolean": true,
+                    "inner_object": {
+                        "null": null,
+                        "number": 1,
+                        "boolean": true
+                    }
+                }),
+            )
+            .with_meta("empty object", json!({}))
+            .with_meta("empty array", json!([]));
 
         let result = formatter.transform(info).unwrap();
 
         // Check for overall structure
         let message = &result.message;
-
-        println!("Formatted Message Output:\n{}", message);
-        println!("RAW MESSAGE: {:?}", message);
 
         // Check for proper JSON-like structure
         assert!(message.starts_with("{"), "Message should start with '{{'");
@@ -126,11 +134,17 @@ mod tests {
         );
 
         // Check for nested objects
-        //assert!(message.contains("extra_info: {"));
-        //assert!(message.contains("inner_object: {"));
+        assert!(
+            message.contains("extra_info: {"),
+            "Should contain 'extra_info' object"
+        );
+        assert!(
+            message.contains("inner_object: {"),
+            "Should contain 'inner_object' object"
+        );
 
-        //depends on order
-        /*let re_nested =
+        // Validate nested object formatting using regex
+        let re_nested =
             Regex::new(r"inner_object:\s*\{\s*boolean:\s*true,\s*null:\s*null,\s*number:\s*1\s*\}")
                 .unwrap();
         assert!(
@@ -142,7 +156,7 @@ mod tests {
         assert!(
             re_extra_info.is_match(message),
             "extra_info object format is incorrect"
-        );*/
+        );
     }
 
     #[test]
@@ -164,9 +178,6 @@ mod tests {
         let re_number = Regex::new(r"number_value: \x1b\[34m12345\x1b\[0m").unwrap();
         let re_bool = Regex::new(r"bool_value: \x1b\[33mtrue\x1b\[0m").unwrap();
         let re_null = Regex::new(r"null_value: \x1b\[31mnull\x1b\[0m").unwrap();
-
-        println!("Formatted Message Output:\n{}", message);
-        println!("RAW MESSAGE: {:?}", message);
 
         // Check if colored output matches
         assert!(re_info.is_match(message), "Missing green color for 'info'");
