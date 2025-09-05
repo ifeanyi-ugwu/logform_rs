@@ -9,9 +9,12 @@ pub struct Printf {
 }
 
 impl Printf {
-    pub fn new(template_fn: Arc<dyn Fn(&LogInfo) -> String + Send + Sync>) -> Self {
+    pub fn new<T>(template_fn: T) -> Self
+    where
+        T: Fn(&LogInfo) -> String + Send + Sync + 'static,
+    {
         Printf {
-            template: template_fn,
+            template: Arc::new(template_fn),
         }
     }
 }
@@ -29,7 +32,7 @@ pub fn printf<T>(template_fn: T) -> Printf
 where
     T: Fn(&LogInfo) -> String + Send + Sync + 'static,
 {
-    Printf::new(Arc::new(template_fn))
+    Printf::new(template_fn)
 }
 
 #[cfg(test)]
@@ -50,6 +53,8 @@ mod tests {
         let info = LogInfo::new("info", "This is a message").with_meta("key", "value");
 
         let result = formatter.transform(info).unwrap();
-        println!("{}", result.message); // Check the formatted output
+
+        let expected = "info - This is a message: {\"key\":\"value\"}".to_string();
+        assert_eq!(result.message, expected);
     }
 }
