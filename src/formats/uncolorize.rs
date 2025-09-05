@@ -37,8 +37,12 @@ impl Uncolorize {
     }
 }
 
+use std::sync::OnceLock;
+
+static STRIP_COLORS_REGEX: OnceLock<Regex> = OnceLock::new();
+
 fn strip_colors(input: &str) -> String {
-    let re = Regex::new(r"\x1b\[[0-9;]*m").unwrap();
+    let re = STRIP_COLORS_REGEX.get_or_init(|| Regex::new(r"\x1b\[[0-9;]*m").unwrap());
     re.replace_all(input, "").to_string()
 }
 
@@ -78,11 +82,6 @@ mod tests {
 
         let uncolorizer = uncolorize();
         let uncolorized_info = uncolorizer.transform(colorized_info.clone()).unwrap();
-
-        println!("Colorized level: {}", colorized_info.level);
-        println!("Colorized message: {}", colorized_info.message);
-        println!("Uncolored level: {}", uncolorized_info.level);
-        println!("Uncolored message: {}", uncolorized_info.message);
 
         assert_eq!(uncolorized_info.level, "info");
         assert_eq!(uncolorized_info.message, "This is an info message");
