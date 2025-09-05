@@ -41,6 +41,43 @@ pub fn simple() -> SimpleFormat {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_simple_format_no_padding_metadata() {
+        let simple_formatter = SimpleFormat;
+
+        let info = LogInfo::new("info", "User logged in")
+            .with_meta("user_id", Value::Number(12345.into()))
+            .with_meta("session_id", Value::String("abcde12345".to_string()));
+
+        let result = simple_formatter.transform(info).unwrap();
+
+        // Should start with 'info: User logged in '
+        let expected_prefix = "info: User logged in ";
+        assert!(result.message.starts_with(expected_prefix));
+
+        // Extract and parse the JSON part
+        let json_part = result.message.strip_prefix(expected_prefix).unwrap();
+        let actual_json: Value = serde_json::from_str(json_part).unwrap();
+
+        let expected_json = json!({
+            "user_id": 12345,
+            "session_id": "abcde12345"
+        });
+        assert_eq!(actual_json, expected_json);
+    }
+
+    #[test]
+    fn test_simple_format_no_metadata_after_filtering() {
+        let simple_formatter = SimpleFormat;
+
+        let info = LogInfo::new("info", "User logged in");
+
+        let result = simple_formatter.transform(info).unwrap();
+
+        // Should match exactly since no metadata remains
+        let expected_message = "info: User logged in";
+        assert_eq!(result.message, expected_message);
+    }
     use super::*;
     use serde_json::{json, Value};
 
