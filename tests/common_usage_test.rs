@@ -4,12 +4,10 @@ use logform::{chain, colorize, json, printf, simple, timestamp, Format, LogInfo}
 pub fn initialize_and_test_formats() {
     let log_info = LogInfo::new("info", "This is a test message");
 
-    let colors = vec![
+    let colors = std::collections::HashMap::from([
         ("info".to_string(), serde_json::json!(["blue"])),
         ("error".to_string(), serde_json::json!(["red", "bold"])),
-    ]
-    .into_iter()
-    .collect::<std::collections::HashMap<_, _>>();
+    ]);
 
     let format = chain!(
         timestamp(),
@@ -20,8 +18,6 @@ pub fn initialize_and_test_formats() {
                 .get("timestamp")
                 .and_then(|v| v.as_str())
                 .unwrap_or("");
-            //.map(|v| v.to_string())
-            //.unwrap_or_else(|| "".to_string());
 
             format!("{} - {}: {}", timestamp, info.level, info.message)
         }),
