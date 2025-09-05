@@ -18,20 +18,13 @@ impl PrettyPrinter {
         self
     }
 
-    fn format_log(&self, info: &LogInfo) -> LogInfo {
-        let filtered_meta: std::collections::HashMap<String, Value> = info
-            .meta
-            .iter()
-            .filter(|(k, _)| k != &"level" && k != &"message" && k != &"splat")
-            .map(|(k, v)| (k.clone(), v.clone()))
-            .collect();
-
+    fn format_log(&self, info: LogInfo) -> LogInfo {
         let mut json_output = Map::new();
         json_output.insert("level".to_string(), Value::String(info.level.clone()));
         json_output.insert("message".to_string(), Value::String(info.message.clone()));
 
-        for (key, value) in &filtered_meta {
-            json_output.insert(key.clone(), value.clone());
+        for (key, value) in info.meta {
+            json_output.insert(key, value);
         }
 
         let json_value = Value::Object(json_output);
@@ -40,7 +33,7 @@ impl PrettyPrinter {
         LogInfo {
             level: info.level.clone(),
             message: pretty_message,
-            meta: filtered_meta,
+            meta: std::collections::HashMap::new(),
         }
     }
 }
@@ -49,7 +42,7 @@ impl Format for PrettyPrinter {
     type Input = LogInfo;
 
     fn transform(&self, info: LogInfo) -> Option<Self::Input> {
-        Some(self.format_log(&info))
+        Some(self.format_log(info))
     }
 }
 
