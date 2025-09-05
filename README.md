@@ -37,7 +37,7 @@ At the core is the `LogInfo` struct representing a single log message:
 pub struct LogInfo {
     pub level: String,
     pub message: String,
-    pub meta: std::collections::HashMap<String, Value>,
+    pub meta: std::collections::HashMap<String, serde_json::Value>,
 }
 ```
 
@@ -65,8 +65,8 @@ pub struct LogInfo {
 - Access metadata:
 
   ```rust
-  if let Some(user_id) = info.meta.get("user_id") {
-      // use user_id...
+  if let Some(serde_json::Value::Number(id)) = info.meta.get("user_id") {
+          // use id...
   }
   ```
 
@@ -87,7 +87,7 @@ pub trait Format {
     fn chain<F>(self, next: F) -> ChainedFormat<Self, F>
     where
         Self: Sized,
-        F: Format,
+        F: Format<Input = Self::Input>,
     {
         ChainedFormat { first: self, next }
     }
@@ -260,7 +260,8 @@ impl Format for IgnorePrivate {
 
     fn transform(&self, info: LogInfo) -> Option<LogInfo> {
         if let Some(private) = info.meta.get("private") {
-            if private == "true" {
+            use serde_json::Value;
+            if matches!(private, Value::Bool(true)) || private == "true" {
                 return None;
             }
         }
