@@ -56,7 +56,7 @@ impl CliFormat {
     }
 
     fn transform(&self, info: LogInfo) -> Option<LogInfo> {
-        let mut transformed_info = self.padder.transform(info.clone())?;
+        let mut transformed_info = self.padder.transform(info)?;
         transformed_info = self.colorizer.transform(transformed_info)?;
 
         transformed_info.message =
@@ -129,7 +129,6 @@ mod cli_format_tests {
 
         let log_info = LogInfo::new("error", "Test message");
         let transformed = cli_format.transform(log_info).unwrap();
-        println!("{}", transformed.message);
         assert_eq!(
             transformed.message,
             format!("\x1b[1;31merror\x1b[0m:\x1b[1;31m*Test message\x1b[0m")
