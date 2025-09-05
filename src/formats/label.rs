@@ -33,8 +33,7 @@ impl Format for LabelFormat {
         if self.message {
             info.message = format!("[{}] {}", self.label, info.message);
         } else {
-            info.meta
-                .insert("label".to_string(), json!(self.label.clone()));
+            info.meta.insert("label".to_string(), json!(self.label));
         }
         Some(info)
     }
@@ -46,6 +45,32 @@ pub fn label() -> LabelFormat {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_label_format_empty_label_message() {
+        let label_format = LabelFormat::new().with_label("").with_message(true);
+        let info = LogInfo::new("info", "Test message");
+        let result = label_format.transform(info).unwrap();
+        assert_eq!(result.message, "[] Test message");
+    }
+
+    #[test]
+    fn test_label_format_overwrite_existing_label_meta() {
+        let label_format = LabelFormat::new()
+            .with_label("NEW_LABEL")
+            .with_message(false);
+        let mut info = LogInfo::new("info", "Test message");
+        info.meta.insert("label".to_string(), json!("OLD_LABEL"));
+        let result = label_format.transform(info).unwrap();
+        assert_eq!(result.meta.get("label"), Some(&json!("NEW_LABEL")));
+    }
+
+    #[test]
+    fn test_label_format_empty_message() {
+        let label_format = LabelFormat::new().with_label("LABEL").with_message(true);
+        let info = LogInfo::new("info", "");
+        let result = label_format.transform(info).unwrap();
+        assert_eq!(result.message, "[LABEL] ");
+    }
     use super::*;
 
     #[test]
