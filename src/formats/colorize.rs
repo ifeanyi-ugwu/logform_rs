@@ -106,7 +106,10 @@ impl Colorizer {
                     .filter_map(|v| v.as_str().map(|s| s.to_string()))
                     .collect::<Vec<_>>()
                     .into(),
-                _ => continue,
+                _ => {
+                    eprintln!("[logform::colorize] Warning: Invalid color configuration for level '{}': {:?}. Skipping.", level, color_val);
+                    continue;
+                }
             };
             all_colors.insert(level, color_entry);
         }
@@ -126,7 +129,7 @@ impl Colorizer {
 
     fn transform(&self, mut info: LogInfo) -> Option<LogInfo> {
         let original_level = info.level.clone();
-        if self.all || self.level || !self.message {
+        if self.all || self.level {
             info.level = self.colorize(&original_level, &info.level);
         }
         if self.all || self.message {
@@ -174,6 +177,14 @@ fn apply_color<'a>(
         "on_magenta" => message.on_magenta(),
         "on_cyan" => message.on_cyan(),
         "on_white" => message.on_white(),
+        "on_bright_black" => message.on_bright_black(),
+        "on_bright_red" => message.on_bright_red(),
+        "on_bright_green" => message.on_bright_green(),
+        "on_bright_yellow" => message.on_bright_yellow(),
+        "on_bright_blue" => message.on_bright_blue(),
+        "on_bright_magenta" => message.on_bright_magenta(),
+        "on_bright_cyan" => message.on_bright_cyan(),
+        "on_bright_white" => message.on_bright_white(),
         "bold" => message.bold(),
         "underline" => message.underline(),
         "italic" => message.italic(),
@@ -231,7 +242,6 @@ mod tests {
 
         let warning_info = LogInfo::new("warning", "Warning message");
         let result_warning = colorizer.transform(warning_info).unwrap();
-        println!("{}", result_warning.level);
         assert!(
             result_warning.level.contains("\x1b["),
             "Warning level should be colorized"
