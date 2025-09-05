@@ -3,32 +3,6 @@ pub trait Format {
 
     fn transform(&self, input: Self::Input) -> Option<Self::Input>;
 
-    /*fn try_chain<F>(self, next: F) -> impl Fn(Self::Input) -> Result<Self::Input, TransformError>
-    where
-        Self: Sized,
-        F: Format<Input = Self::Input>,
-    {
-        move |input| {
-            let intermediate = self
-                .try_transform(input)
-                .map_err(|_| TransformError::TransformationFailed)?;
-
-            next.try_transform(intermediate)
-                .map_err(|_| TransformError::ChainInterrupted)
-        }
-    }
-
-    fn chain<F>(self, next: F) -> impl Fn(Self::Input) -> Option<Self::Input>
-    where
-        Self: Sized,
-        F: Format<Input = Self::Input>,
-    {
-        move |input| {
-            self.transform(input)
-                .and_then(|intermediate| next.transform(intermediate))
-        }
-    }*/
-
     fn chain<F>(self, next: F) -> ChainedFormat<Self, F>
     where
         Self: Sized,
@@ -63,10 +37,20 @@ impl Format for UpperCase {
     type Input = String;
 
     fn transform(&self, input: String) -> Option<Self::Input> {
+        Some(input.to_uppercase())
+    }
+}
+
+struct NonEmpty;
+
+impl Format for NonEmpty {
+    type Input = String;
+
+    fn transform(&self, input: String) -> Option<Self::Input> {
         if input.is_empty() {
             None
         } else {
-            Some(input.to_uppercase())
+            Some(input)
         }
     }
 }
