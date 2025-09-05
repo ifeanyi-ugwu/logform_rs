@@ -23,7 +23,9 @@ pub fn initialize_and_test_formats() {
         }),
     );
 
-    let log_info = format.transform(log_info).unwrap();
+    let log_info = format
+        .transform(log_info)
+        .expect("Format chain transform failed");
     println!("{}", log_info.message);
 }
 
@@ -33,7 +35,9 @@ fn test_json() {
 
     // Apply the simple format
     let simple_format = simple();
-    let log_info = simple_format.transform(log_info).unwrap();
+    let log_info = simple_format
+        .transform(log_info)
+        .expect("Simple format transform failed");
     println!("Simple format: {}", log_info.message);
 
     // Reset log_info for JSON format
@@ -41,6 +45,8 @@ fn test_json() {
 
     // Apply the JSON format
     let json_format = json();
-    let log_info = json_format.transform(log_info).unwrap();
+    let log_info = json_format
+        .transform(log_info)
+        .expect("JSON format transform failed");
     println!("JSON format: {}", log_info.message);
 }
