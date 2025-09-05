@@ -13,16 +13,17 @@ impl Format for JsonFormat {
         log_object.insert("level".to_string(), Value::String(info.level.clone()));
         log_object.insert("message".to_string(), Value::String(info.message.clone()));
 
-        for (key, value) in &info.meta {
-            log_object.insert(key.clone(), value.clone());
+        for (key, value) in info.meta.into_iter() {
+            log_object.insert(key, value);
         }
 
         let json_message = Value::Object(log_object).to_string();
 
+        // Clear meta to avoid duplication and extra memory use
         Some(LogInfo {
             level: info.level,
             message: json_message,
-            meta: info.meta,
+            meta: std::collections::HashMap::new(),
         })
     }
 }
@@ -33,6 +34,68 @@ pub fn json() -> JsonFormat {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_json_format_empty_metadata() {
+        let json_formatter = JsonFormat;
+        let info = LogInfo::new("info", "User logged in");
+        let result = json_formatter.transform(info).unwrap();
+        let expected_json = json!({
+            "level": "info",
+            "message": "User logged in"
+        })
+        .to_string();
+        assert_eq!(result.message, expected_json);
+    }
+
+    #[test]
+    fn test_json_format_special_characters() {
+        let json_formatter = JsonFormat;
+        let info = LogInfo::new("info", "Special chars: \" \n \t ")
+            .with_meta("weird\nkey", Value::String("strange\tvalue".to_string()));
+        let result = json_formatter.transform(info).unwrap();
+        let expected_json = json!({
+            "level": "info",
+            "message": "Special chars: \" \n \t ",
+            "weird\nkey": "strange\tvalue"
+        })
+        .to_string();
+        assert_eq!(result.message, expected_json);
+    }
+
+    #[test]
+    fn test_json_format_large_metadata() {
+        let json_formatter = JsonFormat;
+        let mut info = LogInfo::new("info", "Bulk meta test");
+        for i in 0..1000 {
+            info.meta
+                .insert(format!("key_{}", i), Value::Number(i.into()));
+        }
+        let result = json_formatter.transform(info).unwrap();
+        let mut expected = serde_json::Map::new();
+        expected.insert("level".to_string(), Value::String("info".to_string()));
+        expected.insert(
+            "message".to_string(),
+            Value::String("Bulk meta test".to_string()),
+        );
+        for i in 0..1000 {
+            expected.insert(format!("key_{}", i), Value::Number(i.into()));
+        }
+        let expected_json = Value::Object(expected).to_string();
+        assert_eq!(result.message, expected_json);
+    }
+
+    #[test]
+    fn test_json_format_empty_level_and_message() {
+        let json_formatter = JsonFormat;
+        let info = LogInfo::new("", "");
+        let result = json_formatter.transform(info).unwrap();
+        let expected_json = json!({
+            "level": "",
+            "message": ""
+        })
+        .to_string();
+        assert_eq!(result.message, expected_json);
+    }
     use serde_json::json;
 
     use super::*;
