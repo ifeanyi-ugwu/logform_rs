@@ -1,3 +1,6 @@
+//! DEPRECATED: The legacy_format module is deprecated.
+//! Please use the new trait-based format implementations for improved efficiency and idiomatic Rust.
+//! This module will be removed in a future release.
 mod align;
 mod cli;
 mod colorize;
