@@ -35,12 +35,11 @@ impl Timestamp {
         };
 
         // Always set the timestamp field
-        info.meta
-            .insert("timestamp".to_string(), json!(timestamp.clone()));
+        info.meta.insert("timestamp".to_string(), json!(&timestamp));
 
         // Set alias if provided
         if let Some(alias) = &self.alias {
-            info.meta.insert(alias.clone(), json!(timestamp));
+            info.meta.insert(alias.clone(), json!(&timestamp));
         }
 
         Some(info)
@@ -72,7 +71,6 @@ mod tests {
 
         assert!(result.meta.contains_key("timestamp"));
         let timestamp = result.meta.get("timestamp").unwrap().as_str().unwrap();
-        println!("{}", timestamp);
 
         let rfc3339_regex =
             Regex::new(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}([+-]\d{2}:\d{2}|Z)$").unwrap();
