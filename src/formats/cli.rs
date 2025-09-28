@@ -79,7 +79,7 @@ pub fn cli() -> CliFormat {
 }
 
 #[cfg(test)]
-mod cli_format_tests {
+mod tests {
     use super::*;
     use colored::control::set_override;
     use std::collections::HashMap;

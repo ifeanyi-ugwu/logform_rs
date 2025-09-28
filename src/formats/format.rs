@@ -31,55 +31,55 @@ where
     }
 }
 
-// Example format implementations
-struct UpperCase;
-impl Format for UpperCase {
-    type Input = String;
-
-    fn transform(&self, input: String) -> Option<Self::Input> {
-        Some(input.to_uppercase())
-    }
-}
-
-struct NonEmpty;
-
-impl Format for NonEmpty {
-    type Input = String;
-
-    fn transform(&self, input: String) -> Option<Self::Input> {
-        if input.is_empty() {
-            None
-        } else {
-            Some(input)
-        }
-    }
-}
-
-struct ReverseFormat;
-impl Format for ReverseFormat {
-    type Input = String;
-
-    fn transform(&self, input: String) -> Option<Self::Input> {
-        Some(input.chars().rev().collect())
-    }
-}
-
-#[derive(Clone)]
-struct AddSuffix(String);
-impl Format for AddSuffix {
-    type Input = String;
-
-    fn transform(&self, input: String) -> Option<Self::Input> {
-        Some(format!("{}{}", input, self.0))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    // Example format implementations
+    struct UpperCase;
+    impl Format for UpperCase {
+        type Input = String;
+
+        fn transform(&self, input: String) -> Option<Self::Input> {
+            Some(input.to_uppercase())
+        }
+    }
+
+    struct NonEmpty;
+
+    impl Format for NonEmpty {
+        type Input = String;
+
+        fn transform(&self, input: String) -> Option<Self::Input> {
+            if input.is_empty() {
+                None
+            } else {
+                Some(input)
+            }
+        }
+    }
+
+    struct ReverseFormat;
+    impl Format for ReverseFormat {
+        type Input = String;
+
+        fn transform(&self, input: String) -> Option<Self::Input> {
+            Some(input.chars().rev().collect())
+        }
+    }
+
+    #[derive(Clone)]
+    struct AddSuffix(String);
+    impl Format for AddSuffix {
+        type Input = String;
+
+        fn transform(&self, input: String) -> Option<Self::Input> {
+            Some(format!("{}{}", input, self.0))
+        }
+    }
+
     #[test]
-    fn test_proposed_format() {
+    fn test_format() {
         let upper = UpperCase;
         let reverse = ReverseFormat;
         let suffix = AddSuffix("-end".to_string());
