@@ -23,8 +23,3 @@ serde = ["dep:serde"]
 
 [dev-dependencies]
 criterion = "0.5.1"
-
-
-[[bench]]
-name = "benchmark"
-harness = false

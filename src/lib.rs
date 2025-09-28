@@ -1,6 +1,5 @@
 pub mod config;
 mod formats;
-pub mod legacy_format;
 mod log_info;
 mod utils;
 
