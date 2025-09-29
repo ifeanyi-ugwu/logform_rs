@@ -289,6 +289,7 @@ mod display_tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn test_roundtrip() {
         let original = LogInfo::new("INFO", "Test message").with_meta("key", "value");
 
